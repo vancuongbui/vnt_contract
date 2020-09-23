@@ -3,37 +3,37 @@
 
 typedef struct
 {
-  uint256 balance;              
-  string nickName;               
-  bool freeAddress;                                               
-  uint64 winCount;                
-  uint64 loseCount;                
-  uint64 chickenCount;                               
-  uint256 winReward;                   
-  uint256 loseAmount;              
+  uint256 balance;     //deposit
+  string nickName;     //nickname
+  bool freeAddress;    //Have you already received the gift chips?
+  uint64 winCount;     //Games won
+  uint64 loseCount;    //Games lost
+  uint64 chickenCount; //Guess the number of 50 games
+  uint256 winReward;   //Winning profit
+  uint256 loseAmount;  //Total lost
 } Account;
 
-                                             
+//Account balance, mapping balance to address
 KEY mapping(address, Account) accounts;
 
-             
+//Total games
 KEY uint64 totalGameCount;
 
-               
+//Total deposit
 KEY uint256 deposit;
 
-          
+// 10% fee
 KEY uint256 fee = U256(10);
 
-                
+// Owner address
 KEY address owner;
 
 KEY address logicContract;
 
 
-            
-                                                                         
-                                                                 
+// // Events
+// EVENT EVENT_BET(indexed address from, string nickname, uint256 amount,
+//                 int32 bigger, uint64 lottery, uint256 reward);
 EVENT EVENT_WITHDRAW(indexed address from, string nickname, uint256 amount);
 EVENT EVENT_DEPOSIT(indexed address from, string nickname, uint256 amount);
 EVENT EVENT_ADD_DEPOSIT(indexed address from, uint256 amount);
@@ -49,49 +49,15 @@ EVENT EVENT_SET_LOSE_COUNT(indexed address from);
 EVENT EVENT_SET_CHICKEN_COUNT(indexed address from, uint64 _count);
 EVENT EVENT_SET_FREE_ADDRESS(indexed address from);
 
-
-void keycutoybr9(){
-AddKeyInfo( &logicContract, 7, &logicContract, 9, false);
-AddKeyInfo( &totalGameCount, 4, &totalGameCount, 9, false);
-AddKeyInfo( &deposit, 5, &deposit, 9, false);
-AddKeyInfo( &accounts.value.winReward, 5, &accounts, 9, false);
-AddKeyInfo( &accounts.value.winReward, 5, &accounts.key, 7, false);
-AddKeyInfo( &accounts.value.winReward, 5, &accounts.value.winReward, 9, false);
-AddKeyInfo( &accounts.value.winCount, 4, &accounts, 9, false);
-AddKeyInfo( &accounts.value.winCount, 4, &accounts.key, 7, false);
-AddKeyInfo( &accounts.value.winCount, 4, &accounts.value.winCount, 9, false);
-AddKeyInfo( &accounts.value.chickenCount, 4, &accounts, 9, false);
-AddKeyInfo( &accounts.value.chickenCount, 4, &accounts.key, 7, false);
-AddKeyInfo( &accounts.value.chickenCount, 4, &accounts.value.chickenCount, 9, false);
-AddKeyInfo( &accounts.value.loseAmount, 5, &accounts, 9, false);
-AddKeyInfo( &accounts.value.loseAmount, 5, &accounts.key, 7, false);
-AddKeyInfo( &accounts.value.loseAmount, 5, &accounts.value.loseAmount, 9, false);
-AddKeyInfo( &owner, 7, &owner, 9, false);
-AddKeyInfo( &accounts.value.balance, 5, &accounts, 9, false);
-AddKeyInfo( &accounts.value.balance, 5, &accounts.key, 7, false);
-AddKeyInfo( &accounts.value.balance, 5, &accounts.value.balance, 9, false);
-AddKeyInfo( &accounts.value.nickName, 6, &accounts, 9, false);
-AddKeyInfo( &accounts.value.nickName, 6, &accounts.key, 7, false);
-AddKeyInfo( &accounts.value.nickName, 6, &accounts.value.nickName, 9, false);
-AddKeyInfo( &accounts.value.freeAddress, 8, &accounts, 9, false);
-AddKeyInfo( &accounts.value.freeAddress, 8, &accounts.key, 7, false);
-AddKeyInfo( &accounts.value.freeAddress, 8, &accounts.value.freeAddress, 9, false);
-AddKeyInfo( &accounts.value.loseCount, 4, &accounts, 9, false);
-AddKeyInfo( &accounts.value.loseCount, 4, &accounts.key, 7, false);
-AddKeyInfo( &accounts.value.loseCount, 4, &accounts.value.loseCount, 9, false);
-AddKeyInfo( &fee, 5, &fee, 9, false);
-}
 constructor $Dice()
 {
-keycutoybr9();
-InitializeVariables();
   owner = GetSender();
   totalGameCount = 0;
 }
 
-                     
-                                                                    
-    
+// bool ownerOnly() {
+//   Require(GetSender() == GetOwner()), "Only Owner for the task");
+// }
 
 void checkOwner()
 {
@@ -108,7 +74,6 @@ void checkLogicContract()
 MUTABLE
 void SetTotalGameCount(uint64 _totalGameCount)
 {
-keycutoybr9();
   checkLogicContract();
   totalGameCount = _totalGameCount;
 }
@@ -116,15 +81,13 @@ keycutoybr9();
 UNMUTABLE
 uint64 getTotalGameCount()
 {
-keycutoybr9();
   return totalGameCount;
 }
 
-                             
+// set and get logic contract
 MUTABLE
 void setLogicContractAddress(address logicContractAddress)
 {
-keycutoybr9();
   checkOwner();
   logicContract = logicContractAddress;
 }
@@ -132,16 +95,14 @@ keycutoybr9();
 UNMUTABLE
 address getLogicContractAddress()
 {
-keycutoybr9();
 
   return logicContract;
 }
 
-         
+// getFee
 MUTABLE
 void setFee(uint256 _fee)
 {
-keycutoybr9();
   checkLogicContract();
   fee = _fee;
 }
@@ -149,7 +110,6 @@ keycutoybr9();
 UNMUTABLE
 uint256 getFee()
 {
-keycutoybr9();
   return fee;
 }
 
@@ -165,13 +125,13 @@ uint256 getReward(uint256 amount)
   return reward;
 }
 
-          
-                             
-                                          
-                                                                            
-                                                                                
-                                              
-                                    
+// you win
+    // accounts.key = sender;
+    // uint256 reward = getReward(amount);
+    // accounts.value.balance = U256SafeAdd(accounts.value.balance, reward);
+    // accounts.value.winReward = U256SafeAdd(accounts.value.winReward, reward);
+    // deposit = U256SafeAdd(deposit, reward);
+    // accounts.value.winCount += 1;
 
 void setReward(address _address, uint256 reward)
 {
@@ -193,7 +153,7 @@ void setLost(address _address, uint256 amount)
   accounts.value.loseCount += 1;
 }
 
-                                
+// Is the prize pool sufficient?
 void checkPool(uint256 amount)
 {
   uint256 contractBalance = GetBalanceFromAddress(GetContractAddress());
@@ -209,7 +169,7 @@ void checkPool(uint256 amount)
 }
 
 
-                                  
+// Check if there is enough to bet
 void checkAmount(uint256 amount)
 {
   Require(U256_Cmp(amount, U256(0) == 1), "amount must > 0");
@@ -225,10 +185,9 @@ void checkAmount(uint256 amount)
 MUTABLE
 void Withdraw(address from, uint256 amount)
 {
-keycutoybr9();
   checkLogicContract();
   checkAmount(amount);
-                                
+  // address from = GetSender();
   if (TransferFromContract(from, amount) == true)
   {
     accounts.key = from;
@@ -238,27 +197,24 @@ keycutoybr9();
   }
 }
 
-                                      
+// Withdraw the prize pool, only owner
 MUTABLE
 void WithdrawPool(uint256 amount)
 {
-keycutoybr9();
   checkLogicContract();
   checkOwner();
   checkPool(amount);
   TransferFromContract(GetSender(), amount);
 }
 
-                       
+//Expand the prize pool
 MUTABLE
-void $DepositPool() {
-keycutoybr9();}
+void $DepositPool() {}
 
-         
+//deposit
 MUTABLE
 void $Deposit()
 {
-keycutoybr9();
   checkLogicContract();
   uint256 amount = GetValue();
   address from = GetSender();
@@ -271,7 +227,6 @@ keycutoybr9();
 MUTABLE
 void addDeposit(address from, uint256 amount)
 {
-keycutoybr9();
   checkLogicContract();
   accounts.key = from;
   accounts.value.balance = U256SafeAdd(accounts.value.balance, amount);
@@ -283,7 +238,6 @@ keycutoybr9();
 MUTABLE
 void SetNickName(string name)
 {
-keycutoybr9();
   checkLogicContract();
   address from = GetSender();
   accounts.key = from;
@@ -294,14 +248,12 @@ keycutoybr9();
 UNMUTABLE
 string GetNickNameFromAddress(address addr)
 {
-keycutoybr9();
   accounts.key = addr;
   return accounts.value.nickName;
 }
 
 UNMUTABLE
-string GetNickName() {
-keycutoybr9(); return GetNickNameFromAddress(GetSender()); }
+string GetNickName() { return GetNickNameFromAddress(GetSender()); }
 
 
 
@@ -309,14 +261,12 @@ keycutoybr9(); return GetNickNameFromAddress(GetSender()); }
 
 
 UNMUTABLE
-address GetOwner() {
-keycutoybr9(); return owner; }
+address GetOwner() { return owner; }
 
-                      
+// get and set balance
 UNMUTABLE
 uint256 getBalanceOf(address addr)
 {
-keycutoybr9();
   checkLogicContract();
   accounts.key = addr;
   return accounts.value.balance;
@@ -326,8 +276,7 @@ keycutoybr9();
 MUTABLE
 void setBalanceOf(address from, uint256 amount)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   accounts.value.balance = amount;
@@ -337,8 +286,7 @@ keycutoybr9();
 MUTABLE
 void addBalanceOf(address from, uint256 amount)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   accounts.value.balance = U256SafeAdd(accounts.value.balance, amount);
@@ -348,8 +296,7 @@ keycutoybr9();
 MUTABLE
 void subBalanceOf(address from, uint256 amount)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   accounts.value.balance = U256SafeSub(accounts.value.balance, amount);
@@ -358,15 +305,13 @@ keycutoybr9();
 
 UNMUTABLE
 uint256 GetAmount() {
-keycutoybr9();
   return getBalanceOf(GetSender());
 }
 
-                      
+// get and set winning
 UNMUTABLE
 uint256 getRewardOf(address addr)
 {
-keycutoybr9();
   accounts.key = addr;
   return accounts.value.winReward;
 }
@@ -375,19 +320,17 @@ keycutoybr9();
 MUTABLE
 void setRewardOf(address from, uint256 amount)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   accounts.value.winReward = U256SafeAdd(accounts.value.winReward, amount);
   EVENT_SET_REWARD_AMOUNT(from, amount);
 }
 
-                         
+// get and set for losing
 UNMUTABLE
 uint256 getLostOf(address addr)
 {
-keycutoybr9();
   accounts.key = addr;
   return accounts.value.winReward;
 }
@@ -396,19 +339,17 @@ keycutoybr9();
 MUTABLE
 void setLostOf(address from, uint256 amount)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   accounts.value.loseAmount = U256SafeSub(accounts.value.loseAmount, amount);
   EVENT_SET_LOSE_AMOUNT(from, amount);
 }
 
-                        
+// get and set win count
 UNMUTABLE
 uint64 getWinCountOf(address addr)
 {
-keycutoybr9();
   accounts.key = addr;
   return accounts.value.winCount;
 }
@@ -417,19 +358,17 @@ keycutoybr9();
 MUTABLE
 void setWinCountOf(address from)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   accounts.value.winCount += 1;
   EVENT_SET_WIN_COUNT(from);
 }
 
-                        
+// get and set win count
 UNMUTABLE
 uint64 getLoseCountOf(address addr)
 {
-keycutoybr9();
   accounts.key = addr;
   return accounts.value.loseCount;
 }
@@ -438,19 +377,17 @@ keycutoybr9();
 MUTABLE
 void setLoseCountOf(address from)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   accounts.value.loseCount += 1;
   EVENT_SET_LOSE_COUNT(from);
 }
 
-                        
+// get and set win count
 UNMUTABLE
 uint64 getChikenCountOf(address addr)
 {
-keycutoybr9();
   accounts.key = addr;
   return accounts.value.chickenCount;
 }
@@ -459,19 +396,17 @@ keycutoybr9();
 MUTABLE
 void setChikenCountOf(address from, uint64 count)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   accounts.value.loseCount = count;
   EVENT_SET_CHICKEN_COUNT(from, count);
 }
 
-                          
+// get and set freeAddress
 UNMUTABLE
 uint64 getFreeAddressOf(address addr)
 {
-keycutoybr9();
   accounts.key = addr;
   return accounts.value.freeAddress;
 }
@@ -480,8 +415,7 @@ keycutoybr9();
 MUTABLE
 void setFreeAddressOf(address from)
 {
-keycutoybr9();
-                                
+  // address from = GetSender();
   checkLogicContract();
   accounts.key = from;
   if (accounts.value.freeAddress == false) {
@@ -494,16 +428,13 @@ keycutoybr9();
 UNMUTABLE
 uint256 GetPool()
 {
-keycutoybr9();
   uint256 amount = GetBalanceFromAddress(GetContractAddress());
   return U256SafeSub(amount, deposit);
 }
 
 UNMUTABLE
-uint64 GetTotalGameCount() {
-keycutoybr9(); return totalGameCount; }
+uint64 GetTotalGameCount() { return totalGameCount; }
 
 $_() {
-keycutoybr9();
   $Deposit();
 }

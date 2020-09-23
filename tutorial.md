@@ -1,50 +1,53 @@
-# VNT Dapp开发流程
+# VNT Dapp development process
 
-## 开发工具
+## development tools
 
-* [``Bottle``](https://github.com/vntchain/bottle)，vnt合约工具，用于合约编写的代码提示，代码编译，abi生成，压缩和解压。
-* [``VNT Contract for vscode``](https://github.com/vntchain/vnt-contract-vscode)，合约代码提示的vscode插件。
-* [``vnt.js``](https://github.com/vntchain/vnt.js)，JavaScript接口，用于提供常用的账户查询，转账，合约等相关操作。
-* [``vnt-kit.js``](https://github.com/vntchain/vnt-kit.js)，JavaScript接口，用于提供钱包相关的基本操作。
+* [``Bottle``](https://github.com/vntchain/bottle)，The vnt contract tool is used for code prompting, code compilation, abi generation, compression and decompression of contract writing.。
+* [``VNT Contract for vscode``](https://github.com/vntchain/vnt-contract-vscode)，The vscode plugin prompted by the contract code
+* [``vnt.js``](https://github.com/vntchain/vnt.js)，JavaScript Interface, used to provide common account query, transfer, contract and other related operations。
+* [``vnt-kit.js``](https://github.com/vntchain/vnt-kit.js)，JavaScript interface, used to provide basic wallet-related operations。
 
-## 合约语法
+## Contract syntax
 
-* [语法](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/deploy-contract-tutorial.md)
+* [grammar](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/deploy-contract-tutorial.md)
 
-## 合约编写
+## Contract writing
 
-VNT合约使用c语言进行编写，同时吸纳了以太坊合约语言solidity的一些语法，使得拥有c语言基础和solidity基础的开发者能够很容易的开发出一个智能合约
+The VNT contract is written in the C language, and at the same time absorbs some of the grammar of the Ethereum contract language solidity, so that developers with a foundation in the C language and solidity can easily develop a smart contract
 
 ```c
 #include "vntlib.h"
 
 typedef struct
 {
-  uint256 balance;     //存款
-  string nickName;     //昵称
-  bool freeAddress;    //是否已经领取过赠送的筹码
-  uint64 winCount;     //赢的局数
-  uint64 loseCount;    //输的局数
-  uint64 chickenCount; //猜中50的局数
-  uint256 winReward;   //赢的收益
-  uint256 loseAmount;  //输的总额
+  uint256 balance;     //deposit
+  string nickName;     //nickname
+  bool freeAddress;    //Have you already received the gift chips?
+  uint64 winCount;     //Games won
+  uint64 loseCount;    //Games lost
+  uint64 chickenCount; //Guess the number of 50 games
+  uint256 winReward;   //Winning profit
+  uint256 loseAmount;  //Total lost
 } Account;
-//账号余额
+//Account balance, mapping balance to address
 KEY mapping(address, Account) accounts;
 
-//总局数
+//Total games
 KEY uint64 totalGameCount;
 
-//存款总额
+//Total deposit
 KEY uint256 deposit;
 
-// 10%
+// 10% fee
 KEY uint256 fee = U256(10);
 
+// Owner address
 KEY address owner;
 
+// Free amount
 KEY uint256 freeAmount = U256(100000000000000000000); // 100*10**18;
 
+// Events
 EVENT EVENT_BET(indexed address from, string nickname, uint256 amount,
                 int32 bigger, uint64 lottery, uint256 reward);
 EVENT EVENT_WITHDRAW(indexed address from, string nickname, uint256 amount);
@@ -70,7 +73,7 @@ uint256 getReward(uint256 amount)
   return reward;
 }
 
-//是否有足够的赌注
+// Check if there is enough to bet
 void checkAmount(uint256 amount)
 {
   Require(U256_Cmp(amount, U256(0) == 1), "amount must > 0");
@@ -83,7 +86,7 @@ void checkAmount(uint256 amount)
           "No enough money to bet");
 }
 
-//奖池是否足够
+//Is the prize pool sufficient?
 void checkPool(uint256 amount)
 {
   uint256 contractBalance = GetBalanceFromAddress(GetContractAddress());
@@ -182,7 +185,7 @@ void Bet(uint256 amount, int32 bigger)
   }
 }
 
-//提款
+//Withdrawal
 MUTABLE
 void Withdraw(uint256 amount)
 {
@@ -198,7 +201,7 @@ void Withdraw(uint256 amount)
   }
 }
 
-//提取全部
+//Withdrawall All
 MUTABLE
 void WithdrawAll()
 {
@@ -207,7 +210,7 @@ void WithdrawAll()
   Withdraw(amount);
 }
 
-//提取奖池，only owner
+//Withdraw from pool, only owner
 MUTABLE
 void WithdrawPool(uint256 amount)
 {
@@ -216,7 +219,7 @@ void WithdrawPool(uint256 amount)
   TransferFromContract(GetSender(), amount);
 }
 
-//提取奖池
+//Withdraw the prize pool, only owner
 MUTABLE
 void WithdrawPoolAll()
 {
@@ -224,11 +227,11 @@ void WithdrawPoolAll()
   WithdrawPool(amount);
 }
 
-//扩充奖池
+//Expand the prize pool
 MUTABLE
 void $DepositPool() {}
 
-//存款
+//deposit
 MUTABLE
 void $Deposit()
 {
@@ -240,7 +243,7 @@ void $Deposit()
   EVENT_DEPOSIT(from, accounts.value.balance, amount);
 }
 
-//免费筹获取100VNT的筹码,每个账号可以获取一次
+//Get 100VNT chips for free, each account can get one time
 MUTABLE
 void GetFreeChips()
 {
@@ -254,6 +257,7 @@ void GetFreeChips()
   EVENT_GETFREEVNT(from, true);
 }
 
+// Nickname of better
 MUTABLE
 void SetNickName(string name)
 {
@@ -312,14 +316,15 @@ $_() { $Deposit(); }
 
 ```
 
-上面的代码是一个猜数字的智能合约例子，里面包含了随机数的生成，链上数据的存储和读取，event事件，合约转账等关键操作，更详细的语法参考[文档](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/write-contract.md)
+The above code is an example of a smart contract for guessing numbers, which includes the generation of random numbers, the storage and reading of data on the chain, event events, contract transfers and other key operations, more detailed syntax reference[Documentation](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/write-contract.md)
 
-## 合约编译
+## Contract compilation
 
-合约编译需要使用``bottle``,编译完后会生成abi文件和xxx.compress文件，abi文件用于和合约的交互，compress文件是压缩后的合约字节码，用于合约的部署
+Need to use for contract compilation``bottle``,After compilation, abi files and xxx.compress files will be generated. The abi files are used to interact with the contract. The compress file is the compressed bytecode of the contract and is used for contract deployment.
 
 ```
 $ bottle compile -code ./contract/dice.c
+
 
 >>>Compile finished. 633.684578ms
 >>>Input file
@@ -334,9 +339,19 @@ $ bottle compile -code ./contract/dice.c
 >>>Please use $Dice.compress when you want to create a contract
 ```
 
-## 合约部署
+Other options:
+$ bottle compile -code ./contract/diceData.c --output ./contract/dataOutput
 
-合约部署之前需要先对账号进行解锁，解锁需要使用keystore文件和解锁密码，解锁后得到账号的私钥，通过私钥可以对交易进行签名，签名后的交易才能够发送到链上
+--code value Specific a contract code path
+  --include Specific the head file directory need by contract
+  --output Specific a output directory path
+  --file value Specific a compress file path to decompress
+  --abi value Specific a abi path needed by contract
+  --wasm value Specific a wasm path
+
+## Contract deployment
+
+Before deploying the contract, you need to unlock the account. The keystore file and unlock password are required to unlock. After unlocking, the account private key is obtained. The transaction can be signed with the private key, and the signed transaction can be sent to the chain.
 
 
 ```js
@@ -346,7 +361,7 @@ var unlockAccount = (keystore, passwd) => {
 };
 ```
 
-部署合约需要用到compress文件和abi文件
+The compress file and abi file are needed to deploy the contract
 
 ```js
 import Account from 'ethereumjs-account';
@@ -403,12 +418,12 @@ function deployWasmContract() {
 }
 ```
 
-合约部署成功后会获得合约的``address``，address代表合约的唯一入口，记下这个address，之后所有和合约相关的操作都会用到它
+After the contract is successfully deployed, the contract will be obtained``address``，The address represents the only entry of the contract. Make a note of this address, and it will be used in all operations related to the contract.
 
-## 执行合约
+## Contract Revoke and Query
 
-执行合约需要使用abi文件和合约的address,以上面例子中调用bet方法和GetNickName为例
-执行合约之前需要先对账号进行解锁，解锁参考部署合约里的代码
+The execution of the contract requires the use of the abi file and the address of the contract. Take the bet method and GetNickName in the above example as an example
+Before executing the contract, you need to unlock the account first. For unlocking refer to the code in the deployment contract
 
 Bet
 ```js
@@ -460,6 +475,419 @@ var requestNickName = (from, prikey, cb) => {
     });
   };
 ```
-## 最后
+## Write data segregation-upgradable contract
+In order to achieve upgradable smart contract, a target contract need to be separated into two distinctive contracts, data and logic contract.
 
-以上这些，是完成一个vnt智能合约必要的步骤，对于Dapp开发，除了写出一个有创意，实用，有趣的智能合约外，还会涉及到dapp前端的展示，数据的交互，对于一些更复杂的Dapp，还需要在服务器端记录一些有用的信息。
+### Data contract diceData.c
+The data contract simply contains all mutable and immutable data, also interfaces to manipulate this data
+Besides, an authentication interface needed to authorised a target logic contract to interact with.
+
+
+
+#include "vntlib.h"
+#include "diceData.h"
+
+typedef struct
+{
+  uint256 balance;     //deposit
+  string nickName;     //nickname
+  bool freeAddress;    //Have you already received the gift chips?
+
+  uint64 winCount;     //Games won
+  uint64 loseCount;    //Games lost
+  uint64 chickenCount; //Guess the number of 50 games
+  uint256 winReward;   //Winning profit
+  uint256 loseAmount;  //Total lost
+} Account;
+
+//Account balance, mapping balance to address
+KEY mapping(address, Account) accounts;
+
+//Total games
+KEY uint64 totalGameCount;
+
+//Total deposit
+KEY uint256 deposit;
+
+// 10% fee
+KEY uint256 fee = U256(10);
+
+// Owner address
+KEY address owner;
+
+
+// // Events
+// EVENT EVENT_BET(indexed address from, string nickname, uint256 amount,
+//                 int32 bigger, uint64 lottery, uint256 reward);
+EVENT EVENT_WITHDRAW(indexed address from, string nickname, uint256 amount);
+EVENT EVENT_DEPOSIT(indexed address from, string nickname, uint256 amount);
+EVENT EVENT_ADD_DEPOSIT(indexed address from, uint256 amount);
+EVENT EVENT_NICKNAME(indexed address from, string nickName);
+EVENT EVENT_GETFREEVNT(indexed address from, bool got);
+EVENT EVENT_SET_BALANCE(indexed address from, uint256 amount);
+EVENT EVENT_ADD_BALANCE(indexed address from, uint256 amount);
+EVENT EVENT_SUB_BALANCE(indexed address from, uint256 amount);
+EVENT EVENT_SET_REWARD_AMOUNT(indexed address from, uint256 amount);
+EVENT EVENT_SET_WIN_COUNT(indexed address from);
+EVENT EVENT_SET_LOSE_AMOUNT(indexed address from, uint256 amount);
+EVENT EVENT_SET_LOSE_COUNT(indexed address from);
+EVENT EVENT_SET_CHICKEN_COUNT(indexed address from, uint64 _count);
+EVENT EVENT_SET_FREE_ADDRESS(indexed address from);
+
+constructor $Dice()
+{
+  owner = GetSender();
+  totalGameCount = 0;
+}
+
+void checkOwner()
+{
+  address sender = GetSender();
+  Require(Equal(sender, owner) == true, "Only the owner can operate");
+}
+
+MUTABLE
+void SetTotalGameCount(uint64 _totalGameCount)
+{
+  totalGameCount = _totalGameCount;
+}
+
+UNMUTABLE
+uint64 getTotalGameCount()
+{
+  return totalGameCount;
+}
+
+
+// getFee
+
+MUTABLE
+void setFee(uint256 _fee)
+{
+  fee = _fee;
+}
+
+UNMUTABLE
+uint256 getFee()
+{
+  return fee;
+}
+
+
+uint256 getReward(uint256 amount)
+{
+  PrintUint256T("get amount in getreward:", amount);
+  PrintUint256T("get fee1:", fee);
+  uint256 res = U256SafeDiv(amount, fee);
+  PrintUint256T("get fee2:", res);
+  uint256 reward = U256SafeSub(amount, res);
+  PrintUint256T("get reward:", reward);
+  return reward;
+}
+
+// you win
+    // accounts.key = sender;
+    // uint256 reward = getReward(amount);
+    // accounts.value.balance = U256SafeAdd(accounts.value.balance, reward);
+    // accounts.value.winReward = U256SafeAdd(accounts.value.winReward, reward);
+    // deposit = U256SafeAdd(deposit, reward);
+    // accounts.value.winCount += 1;
+
+void setReward(address _address, uint256 reward)
+{
+  accounts.key = _address;
+  accounts.value.balance = U256SafeAdd(accounts.value.balance, reward);
+  accounts.value.winReward = U256SafeAdd(accounts.value.winReward, reward);
+  deposit = U256SafeAdd(deposit, reward);
+  accounts.value.winCount += 1;
+}
+
+void setLost(address _address, uint256 amount)
+{
+  accounts.key = _address;
+  accounts.value.balance = U256SafeSub(accounts.value.balance, amount);
+  accounts.value.loseAmount = U256SafeAdd(accounts.value.loseAmount, amount);
+  deposit = U256SafeSub(deposit, amount);
+  accounts.value.loseCount += 1;
+}
+
+// Is the prize pool sufficient?
+void checkPool(uint256 amount)
+{
+  uint256 contractBalance = GetBalanceFromAddress(GetContractAddress());
+  PrintAddress("get contract address:", GetContractAddress());
+  PrintUint256T("get contract balance:", contractBalance);
+  PrintUint256T("get deposit balance:", deposit);
+  uint256 reward = getReward(amount);
+  Require(
+      U256_Cmp(U256SafeSub(contractBalance,
+                           U256SafeAdd(deposit, U256SafeMul(reward, U256(10)))),
+               0) != -1,
+      "No enough money in prize pool");
+}
+
+
+// Check if there is enough to bet
+void checkAmount(uint256 amount)
+{
+  Require(U256_Cmp(amount, U256(0) == 1), "amount must > 0");
+  address from = GetSender();
+  accounts.key = from;
+  uint256 balance = accounts.value.balance;
+  PrintAddress("get sender:", from);
+  PrintUint256T("get balance:", balance);
+  Require(U256_Cmp(U256SafeSub(balance, amount), 0) != -1,
+          "No enough money to bet");
+}
+
+MUTABLE
+void Withdraw(address from, uint256 amount)
+{
+  checkAmount(amount);
+  // address from = GetSender();
+  if (TransferFromContract(from, amount) == true)
+  {
+    accounts.key = from;
+    accounts.value.balance = U256SafeSub(accounts.value.balance, amount);
+    deposit = U256SafeSub(deposit, amount);
+    EVENT_WITHDRAW(from, accounts.value.nickName, amount);
+  }
+}
+
+// Withdraw the prize pool, only owner
+MUTABLE
+void WithdrawPool(uint256 amount)
+{
+  checkOwner();
+  checkPool(amount);
+  TransferFromContract(GetSender(), amount);
+}
+
+//Expand the prize pool
+MUTABLE
+void $DepositPool() {}
+
+//deposit
+MUTABLE
+void $Deposit()
+{
+  uint256 amount = GetValue();
+  address from = GetSender();
+  accounts.key = from;
+  accounts.value.balance = U256SafeAdd(accounts.value.balance, amount);
+  deposit = U256SafeAdd(deposit, amount);
+  EVENT_DEPOSIT(from, accounts.value.nickName, amount);
+}
+
+MUTABLE
+void addDeposit(address from, uint256 amount)
+{
+  accounts.key = from;
+  accounts.value.balance = U256SafeAdd(accounts.value.balance, amount);
+  deposit = U256SafeAdd(deposit, amount);
+  EVENT_ADD_DEPOSIT(from, amount);
+}
+
+
+MUTABLE
+void SetNickName(string name)
+{
+  address from = GetSender();
+  accounts.key = from;
+  accounts.value.nickName = name;
+  EVENT_NICKNAME(from, name);
+}
+
+UNMUTABLE
+string GetNickNameFromAddress(address addr)
+{
+  accounts.key = addr;
+  return accounts.value.nickName;
+}
+
+UNMUTABLE
+string GetNickName() { return GetNickNameFromAddress(GetSender()); }
+
+
+
+
+
+
+UNMUTABLE
+address GetOwner() { return owner; }
+
+// get and set balance
+UNMUTABLE
+uint256 getBalanceOf(address addr)
+{
+  accounts.key = addr;
+  return accounts.value.balance;
+}
+
+
+MUTABLE
+void setBalanceOf(address from, uint256 amount)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  accounts.value.balance = amount;
+  EVENT_SET_BALANCE(from, amount);
+}
+
+MUTABLE
+void addBalanceOf(address from, uint256 amount)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  accounts.value.balance = U256SafeAdd(accounts.value.balance, amount);
+  EVENT_ADD_BALANCE(from, amount);
+}
+
+MUTABLE
+void subBalanceOf(address from, uint256 amount)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  accounts.value.balance = U256SafeSub(accounts.value.balance, amount);
+  EVENT_SUB_BALANCE(from, amount);
+}
+
+UNMUTABLE
+uint256 GetAmount() {
+  return getBalanceOf(GetSender());
+}
+
+// get and set winning
+UNMUTABLE
+uint256 getRewardOf(address addr)
+{
+  accounts.key = addr;
+  return accounts.value.winReward;
+}
+
+
+MUTABLE
+void setRewardOf(address from, uint256 amount)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  accounts.value.winReward = U256SafeAdd(accounts.value.winReward, amount);
+  EVENT_SET_REWARD_AMOUNT(from, amount);
+}
+
+// get and set for losing
+UNMUTABLE
+uint256 getLostOf(address addr)
+{
+  accounts.key = addr;
+  return accounts.value.winReward;
+}
+
+
+MUTABLE
+void setLostOf(address from, uint256 amount)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  accounts.value.loseAmount = U256SafeSub(accounts.value.loseAmount, amount);
+  EVENT_SET_LOSE_AMOUNT(from, amount);
+}
+
+// get and set win count
+UNMUTABLE
+uint64 getWinCountOf(address addr)
+{
+  accounts.key = addr;
+  return accounts.value.winCount;
+}
+
+
+MUTABLE
+void setWinCountOf(address from)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  accounts.value.winCount += 1;
+  EVENT_SET_WIN_COUNT(from);
+}
+
+// get and set win count
+UNMUTABLE
+uint64 getLoseCountOf(address addr)
+{
+  accounts.key = addr;
+  return accounts.value.loseCount;
+}
+
+
+MUTABLE
+void setLoseCountOf(address from)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  accounts.value.loseCount += 1;
+  EVENT_SET_LOSE_COUNT(from);
+}
+
+// get and set win count
+UNMUTABLE
+uint64 getChikenCountOf(address addr)
+{
+  accounts.key = addr;
+  return accounts.value.chickenCount;
+}
+
+
+MUTABLE
+void setChikenCountOf(address from, uint64 count)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  accounts.value.loseCount = count;
+  EVENT_SET_CHICKEN_COUNT(from, count);
+}
+
+// get and set freeAddress
+UNMUTABLE
+uint64 getFreeAddressOf(address addr)
+{
+  accounts.key = addr;
+  return accounts.value.freeAddress;
+}
+
+
+MUTABLE
+void setFreeAddressOf(address from)
+{
+  // address from = GetSender();
+  accounts.key = from;
+  if (accounts.value.freeAddress == false) {
+    accounts.value.freeAddress = true;
+  }
+  EVENT_SET_FREE_ADDRESS(from);
+}
+
+
+UNMUTABLE
+uint256 GetPool()
+{
+  uint256 amount = GetBalanceFromAddress(GetContractAddress());
+  return U256SafeSub(amount, deposit);
+}
+
+UNMUTABLE
+uint64 GetTotalGameCount() { return totalGameCount; }
+
+$_() {
+  $Deposit();
+}
+
+
+
+## Write proxy-upgradable contract
+
+
+
+## Summary
+
+The above are the necessary steps to complete a vnt smart contract. For Dapp development, in addition to writing a creative, practical and interesting smart contract, it will also involve the display of the dapp front end, data interaction, and for some more complex Dapp also needs to record some useful information on the server side.

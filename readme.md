@@ -2,30 +2,38 @@
 
 ## Getting Started
  
-### 启动测试节点
+### Start the test node
   
-参考[教程](https://github.com/vntchain/vnt-documentation/blob/master/introduction/set-up-vnt-network/set-up-4-node-vnt-network.md)
+Reference [tutorial](https://github.com/vntchain/vnt-documentation/blob/master/introduction/set-up-vnt-network/set-up-4-node-vnt-network.md)
 
-### 部署合约
+### Deploy the contract
   
-参考[教程](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/deploy-contract-tutorial.md)
+Reference [tutorial](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/deploy-contract-tutorial.md)
 
-dice合约部署[教程](https://github.com/vntchain/vnt-contract-demo/blob/master/contract/README.md)
+dice contract deployment [tutorial](https://github.com/vntchain/vnt-contract-demo/blob/master/contract/README.md)
 
-请确保合约部署账号有足够的VNT用于在合约初始化时转账一定量的VNT
+Please make sure that the contract deployment account has enough VNT to transfer a certain amount of VNT when the contract is initialized
     
-### 启动DAPP页面
+### Launch DAPP page
 
-安装依赖.
+Install dependencies.
 
 ```bash
 $ npm install
 ```
 
-启动服务.
+Start the service.
 
 ```bash
 $ npm start
 ```
-
   
+
+
+
+Package block
+Unlock the account and open the consensus on each initial witness node, and you can see that the block is continuously generated.
+
+personal.unlockAccount(core.coinbase, "account password", 3153600000) // 3153600000 refers to the number of seconds to unlock, after this period of time, the account will be automatically locked
+bp.start()
+Above, the development and test network is set up.

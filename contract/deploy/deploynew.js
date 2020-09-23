@@ -5,23 +5,35 @@ var TX = require('ethereumjs-tx');
 var vnt = new Vnt();
 
 
-var provider = 'http://47.102.157.204:8880';
-// var provider = 'http://127.0.0.1:8880';
+// var privider = 'http://47.102.157.204:8880';
+var privider = 'http://127.0.0.1:8880';
 var chainid = 2;
 
-vnt.setProvider(new vnt.providers.HttpProvider(provider));
+vnt.setProvider(new vnt.providers.HttpProvider(privider));
 
 
-var from1 = '0x122369f04f32269598789998de33e3d56e2c507a';
-var from1Keystore = 'replace';
-var pass1 = '';
-var from2 = '0x3dcf0b3787c31b2bdf62d5bc9128a79c2bb18829';
-var from2Keystore = 'replace';
-var pass2 = '';
-var toAddr = '0x3ea7a559e44e8cabc362ca28b6211611467c76f3';
+// var from1 = '0x122369f04f32269598789998de33e3d56e2c507a';
+// var from1Keystore = 'replace';
+// var pass1 = '';
+// var from2 = '0x3dcf0b3787c31b2bdf62d5bc9128a79c2bb18829';
+// var from2Keystore = 'replace';
+// var pass2 = '';
+// var toAddr = '0x3ea7a559e44e8cabc362ca28b6211611467c76f3';
 
-vnt.personal.unlockAccount(from1, pass1);
-// vnt.personal.unlockAccount(from2, pass2);
+// need to apply for Ether
+// https://hubscan.vnt.link/faucet
+var from1 = '0xf3830b235b2110a177d30e53e313b093f0f0a370';
+// var from1 = '0x02f8d9c9bb81b3a81bf13d4ec8818be5918d3658';
+// 0x02f8d9c9bb81b3a81bf13d4ec8818be5918d3658
+var from1Keystore = '/home/ubuntu/testnet/node3/keystore/UTC--2020-09-23T11-32-39.249397942Z--88a1493a2eb3358d8d298e53d8afa46609e8a8ab';
+var pass1 = 'Test@2020';
+
+var from2 = '0x460018c250d6fc6e2f4a57e1a34c7e36438cb55a';
+var from2Keystore = '/home/ubuntu/testnet/node3/keystore/UTC--2020-09-23T11-32-39.249397942Z--460018c250d6fc6e2f4a57e1a34c7e36438cb55a';
+var pass2 = 'Test@2020';
+
+// vnt.personal.unlockAccount(from1, pass1);
+vnt.personal.unlockAccount(from2, pass2);
 
 
 
@@ -32,6 +44,42 @@ var abiFile =
 var wasmabi = fs.readFileSync(abiFile);
 var abi = JSON.parse(wasmabi.toString('utf-8'));
 
+function deployWasmContract() {
+  // Use abi to initialize a contract object and load the code file
+  var contract = vnt.core.contract(abi).codeFile(codeFile)
+
+  // Deploy contract
+  // Here we don’t need an explicit signature, the vntchain node will sign for us, and the contract can be deployed using a package-friendly new interface
+  var contractReturned = contract.new(100000000000, "VNT Token", "VNT", {
+      from: from1, //The account corresponding to the from parameter will be used as a transaction signature
+      data: contract.code, //pass the contract code as data
+      gas: 4000000
+  }, function(err, myContract){
+     if(!err) {
+        if(!myContract.address) {
+            console.log("transactionHash: ", myContract.transactionHash)
+        } else {
+            console.log("contract address: ", myContract.address)
+        }
+     } else {
+       console.log('error deploy contract as: ');
+       console.log(err)
+     }
+   });
+}
+
+
+function GetAmountNew(address) {
+  console.log("get ammount of address: ", address)
+  // Generate contract instance
+  var contract = vnt.core.contract(abi).at(contractAddr)
+  // Call the GetAmount method of the contract, pay attention to the use of call
+  r = contract.GetAmount.call(address, {from: from1})
+  console.log("result", r.toString())
+}
+
+
+
 function deployWasmContractWithPrivateKey() {
   var contract = vnt.core.contract(abi).codeFile(codeFile);
 
@@ -40,43 +88,6 @@ function deployWasmContractWithPrivateKey() {
   var account = vntkit.account.decrypt(from1Keystore, pass1, false);
 
   sendRawTransaction(account, "0x0", deployContract, value)
-}
-
-function deployWasmContract() {
-  var contract = vnt.core.contract(abi).codeFile(codeFile);
-  var deployContract = contract.packContructorData(
-      {
-        data: contract.code,
-        gas: 4000000,
-        value: vnt.toWei(100000000, 'vnt'),
-      });
-  var nonce = vnt.core.getTransactionCount(from1);
-  var options = {
-    nonce: nonce,
-    gasPrice: vnt.toHex(30000000000000),
-    gasLimit: vnt.toHex(4000000),
-    data: deployContract,
-    value: vnt.toHex(vnt.toWei(value)),
-    chainId: CHAINID
-  };
-  var tx = new TX(options);
-  tx.sign(new Buffer(
-        prikey.substring(
-            2,
-            ),
-        'hex'));
-  var serializedTx = tx.serialize();
-  vnt.core.sendRawTransaction(
-        '0x' + serializedTx.toString('hex'), function(err, txHash) {
-          if (err) {
-            console.log('err happened: ', err)
-            console.log('transaction hash: ', txHash);
-          } else {
-            console.log('transaction hash: ', txHash);
-            var receipt = vnt.core.getTransactionReceipt("txHash")
-            var contractAddress = receipt.contractAddress
-          }
-  });
 }
 
 function getTransactionReceipt(tx, cb) {
@@ -156,11 +167,16 @@ function sendRawTransaction(account,to,data,value){
 
 
 // deployWasmContractWithPrivateKey();
-deployWasmContract()
 
-// var contractAddress = '0x5c876269742f06ccb998d39c4c3b6546d35b5dfb';
+var contractAddress = '0xda8110f8fac5e486dc38adc41be0e65a91659fb5';
 // GetPool();
-// GetAmount();
+GetAmount();
 // Deposit();
 // Bet();
 // TestRandom();
+
+
+
+// ========== new from test net
+// deployWasmContract()
+// GetAmountNew('0x02f8d9c9bb81b3a81bf13d4ec8818be5918d3658')
