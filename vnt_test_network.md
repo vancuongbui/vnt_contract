@@ -57,7 +57,7 @@ Step 3: Use the init.json file to initialize the node, the testnet init.json con
             ]
         }
     },
-    "timestamp": "0x5b45b949",
+    "timestamp": "0x5F6B1E51",
     "extraData": "0x",
     "gasLimit": "0x47b760",
     "difficulty": "0x1",
@@ -113,7 +113,7 @@ Step 3: Use the init.json file to initialize the node, the testnet init.json con
             ]
         }
     },
-    "timestamp": "0x5b45b949",
+    "timestamp": "0x5F6B1E51",
     "extraData": "0x",
     "gasLimit": "0x47b760",
     "difficulty": "0x1",
@@ -244,8 +244,14 @@ note:
 The assignment of the uint256 type needs to use the keyword U256 to convert the number.
 Assignment to the address type needs to use the keyword Address to convert the string.
 Usage of U256 and U256From: U256 can be used for uint256 type initialization and the conversion of numeric constants in the method body, U256From can only be used for the conversion of string constants and variables in the method body
-Usage of Address and AddressFrom: Address can be used for the initialization of address type and the conversion of string constants in the method body, AddressFrom can only be used for the conversion of string constants and variables in the method body
 
+### Usage of Address and AddressFrom: 
+Address can be used for the initialization of address type and the conversion of string constants in the method body, AddressFrom can only be used for the conversion of string constants and variables in the method body
+
+- Note: to asign address to available, this address has to be initiated first:
+  KEY address addr2;
+  address addr1 = Address("0x1");
+  
 
 KEY uint256 var1 = U256(1000000000000);
 KEY address var82 = Address("0xaaa");
@@ -564,7 +570,8 @@ MUTABLE
 uint32 test(int32 var1,string var2){
     ...
 }
-//contract b, call contract a
+
+## contract b, call contract a
 //Declare CALL
 CALL uint32 test(CallParams params,int32 var1,string var2);
 MUTABLE
@@ -573,8 +580,8 @@ uint32 testcall(){
      uint32 res = test(prams, 1, "string");
      ...
 }
-Fallback
 
+## Fallback function
 
 Fallback is an optional function. If the contract implements the Fallback function, when the Input Data of the executed contract is incorrect or empty, wavm will enter the Fallback function to execute. The Fallback function has no parameters and no return value.
 

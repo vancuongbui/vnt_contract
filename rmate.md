@@ -42,7 +42,7 @@
     - enter commond pallete box (view > commond pallete, on Mac, or just press F1 on windows)
         >Remote: Start Server   //type on the box
     - open terminal on vscode, then connect to the remote server for this terminal
-        >ssh -R 52698:localhost:52698 136.186.108.84 -l ubuntu
+        >ssh -R 52698:localhost:52698 136.186.108.56 -l ubuntu
 
 9. Edit file:
     >rmate -f /path/to/the/file

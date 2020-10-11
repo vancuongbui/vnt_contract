@@ -139,3 +139,28 @@ https://hubscan.vnt.link/developer/test
 - speed up process
 
 
+
+
+## Meeting Sep 24 2020  
+1. report progress on VNT project
+  + Complete stage 1: 
+    - running VNT private chain on cloud server
+    - Successfully deploy contract on the network
+    - Documentation: complete 50% of the work
+
+
+2. Next step:
+  - Deploy Logic contract on the top of data contract on vnt private chain
+  - Complete documentation the other 50% work left
+  - Time: by first week of October 2020.
+
+
+## Meetigng Oct 02 2020 
+1. what expectation from VNT as they did not respond to me on WeChat
+- The problem: how to upgrade smart contract on chain
+- Do they have solution to this problem?
+
+2. What are your suggestion to go ahead with this project
+
+
+3. 
