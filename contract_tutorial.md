@@ -1,5 +1,10 @@
 # VNT Dapp development process
 
+## Vnt network
+* [`VNT Test net`](https://hubscan.vnt.link/developer/test)
+* [`VNT Public net`](https://hubscan.vnt.link/developer/join) 
+* [`Private Network Deployment`](./network_deployment.md)
+
 ## development tools
 
 * [``Bottle``](https://github.com/vntchain/bottle)，The vnt contract tool is used for code prompting, code compilation, abi generation, compression and decompression of contract writing.。
@@ -9,11 +14,34 @@
 
 ## Contract syntax
 
-* [grammar](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/deploy-contract-tutorial.md)
+* [`Chinese Language`](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/deploy-contract-tutorial.md)
+* [`English`](./contract_syntax.md)
 
-## Contract writing
+## Contract Development
+This section contain several sections, mainly focus on the development of contract:
+1. Writing a simple smart contract on VNT platform
+Please refer to [`Contract Writing](#Contract-writing) section
+
+2. Compile a contract using bottle
+Please refer to [`Contract compile`](#Contract-compilation) section
+
+3. Deploy a contract on VNT network
+Plese refer to [`Contract Deployment`](#Contract-Deployment) section
+
+4. Query and revoke contract
+Please refer to [`Query and revoke contract`](#Contract-Revoke-and-Query) section
+
+5. Upgradable contract pattern development
+Please refer to [`Upgradable Smart Contract Pattern`](#Upgradable-Smart-Contract-Pattern) section
+
+### Contract writing
+For Chinese reference, please visit [`How to Create a Smart contract`](https://hubscan.vnt.link/developer/dapp/develop)
+
+For detail of contract syntax and references, please refer to [`Contract Syntax`](./contract_syntac.md)
 
 The VNT contract is written in the C language, and at the same time absorbs some of the grammar of the Ethereum contract language solidity, so that developers with a foundation in the C language and solidity can easily develop a smart contract
+
+The following is an example of ***Dice Contract*** without any upgradability
 
 ```c
 #include "vntlib.h"
@@ -361,7 +389,6 @@ var unlockAccount = (keystore, passwd) => {
 };
 ```
 
-The compress file and abi file are needed to deploy the contract
 
 ```js
 import Account from 'ethereumjs-account';
@@ -372,6 +399,7 @@ import vntkit from 'vnt-kit';
 var vnt = new Vnt();
 vnt.setProvider(new vnt.providers.HttpProvider(Config.providerUrl));
 
+// The compress file and abi file are needed to deploy the contract
 var codeFile =
     '../output/$Dice.compress';
 var abiFile =
@@ -475,15 +503,75 @@ var requestNickName = (from, prikey, cb) => {
     });
   };
 ```
-## Write data segregation-upgradable contract
+## Upgradable Smart Contract Pattern
 In order to achieve upgradable smart contract, a target contract need to be separated into two distinctive contracts, data and logic contract.
-
-### Data contract diceData.c
-The data contract simply contains all mutable and immutable data, also interfaces to manipulate this data
-Besides, an authentication interface needed to authorised a target logic contract to interact with.
+This seperation will make sure that data on data contract will remain on the VNT blockchain after the upgrading of logic contract.
 
 
+### Data contract
+The data contract simply contains three parts:
+- Data: all mutable and immutable data that will very unlikely change or being upgraded in the future, 
+  For example, in ***Dice Contarct***, the balances of player, or broadly the accounts of players can be defined as data on data contract.
+  ```c
+    typedef struct
+      {
+        uint256 balance;     //deposit
+        string nickName;     //nickname
+        bool freeAddress;    //Have you already received the gift chips?
+        uint64 winCount;     //Games won
+        uint64 loseCount;    //Games lost
+        uint64 chickenCount; //Guess the number of 50 games
+        uint256 winReward;   //Winning profit
+        uint256 loseAmount;  //Total lost
+      } Account;  
+  ```
 
+- Interfaces: also interfaces to manipulate this data
+  Once data is defined on data contract, some interfaces are also needed to be defined in order for logic contract to access and manipulate this data. For instance, the following interafces used to access and update state of reward of an given account.
+
+  ```c
+    UNMUTABLE
+    uint256 getReward(uint256 amount)
+    {
+      PrintUint256T("get amount in getreward:", amount);
+      PrintUint256T("get fee1:", fee);
+      uint256 res = U256SafeDiv(amount, fee);
+      PrintUint256T("get fee2:", res);
+      uint256 reward = U256SafeSub(amount, res);
+      PrintUint256T("get reward:", reward);
+      return reward;
+    }
+
+    // you win
+        // accounts.key = sender;
+        // uint256 reward = getReward(amount);
+        // accounts.value.balance = U256SafeAdd(accounts.value.balance, reward);
+        // accounts.value.winReward = U256SafeAdd(accounts.value.winReward, reward);
+        // deposit = U256SafeAdd(deposit, reward);
+        // accounts.value.winCount += 1;
+    MUTABLE
+    void setReward(address _address, uint256 reward)
+    {
+      checkLogicContract();
+      accounts.key = _address;
+      accounts.value.balance = U256SafeAdd(accounts.value.balance, reward);
+      accounts.value.winReward = U256SafeAdd(accounts.value.winReward, reward);
+      deposit = U256SafeAdd(deposit, reward);
+      accounts.value.winCount += 1;
+    }
+  ```
+- Authentication: besides, an authentication interface needed to authorised a target logic contract to interact with. For instance, the checkLogicContract() function as below used to authorise a given logic contract to access reward state
+  ```c
+    void checkLogicContract()
+    {
+      address sender = GetSender();
+      Require(Equal(sender, logicContract) == true, "Only the Logic contract can operate");
+    }
+  ```
+
+The following is an example of ***DiceData Contract***
+
+```c
 #include "vntlib.h"
 #include "diceData.h"
 
@@ -492,7 +580,6 @@ typedef struct
   uint256 balance;     //deposit
   string nickName;     //nickname
   bool freeAddress;    //Have you already received the gift chips?
-
   uint64 winCount;     //Games won
   uint64 loseCount;    //Games lost
   uint64 chickenCount; //Guess the number of 50 games
@@ -512,8 +599,12 @@ KEY uint256 deposit;
 // 10% fee
 KEY uint256 fee = U256(10);
 
+KEY uint256 freeAmount = U256(100000000000000000000); // 100*10**18;
+
 // Owner address
 KEY address owner;
+
+KEY address logicContract;
 
 
 // // Events
@@ -534,11 +625,15 @@ EVENT EVENT_SET_LOSE_COUNT(indexed address from);
 EVENT EVENT_SET_CHICKEN_COUNT(indexed address from, uint64 _count);
 EVENT EVENT_SET_FREE_ADDRESS(indexed address from);
 
-constructor $Dice()
+constructor $DiceData()
 {
   owner = GetSender();
   totalGameCount = 0;
 }
+
+// bool ownerOnly() {
+//   Require(GetSender() == GetOwner()), "Only Owner for the task");
+// }
 
 void checkOwner()
 {
@@ -546,9 +641,16 @@ void checkOwner()
   Require(Equal(sender, owner) == true, "Only the owner can operate");
 }
 
+void checkLogicContract()
+{
+  address sender = GetSender();
+  Require(Equal(sender, logicContract) == true, "Only the Logic contract can operate");
+}
+
 MUTABLE
 void SetTotalGameCount(uint64 _totalGameCount)
 {
+  checkLogicContract();
   totalGameCount = _totalGameCount;
 }
 
@@ -558,13 +660,41 @@ uint64 getTotalGameCount()
   return totalGameCount;
 }
 
+// set and get logic contract
+MUTABLE
+void setLogicContractAddress(address logicContractAddress)
+{
+  checkOwner();
+  logicContract = logicContractAddress;
+}
+
+UNMUTABLE
+address getLogicContractAddress()
+{
+
+  return logicContract;
+}
 
 // getFee
-
 MUTABLE
-void setFee(uint256 _fee)
+void setFee(uint256 newFee)
 {
-  fee = _fee;
+  // checkLogicContract();
+  fee = newFee;
+}
+
+UNMUTABLE
+uint256 getFreeAmount()
+{
+  return freeAmount;
+}
+
+// getFee
+MUTABLE
+void setFreeAmount(uint256 newfreeAmount)
+{
+  // checkLogicContract();
+  freeAmount = newfreeAmount;
 }
 
 UNMUTABLE
@@ -573,7 +703,7 @@ uint256 getFee()
   return fee;
 }
 
-
+UNMUTABLE
 uint256 getReward(uint256 amount)
 {
   PrintUint256T("get amount in getreward:", amount);
@@ -592,9 +722,10 @@ uint256 getReward(uint256 amount)
     // accounts.value.winReward = U256SafeAdd(accounts.value.winReward, reward);
     // deposit = U256SafeAdd(deposit, reward);
     // accounts.value.winCount += 1;
-
+MUTABLE
 void setReward(address _address, uint256 reward)
 {
+  // checkLogicContract();
   accounts.key = _address;
   accounts.value.balance = U256SafeAdd(accounts.value.balance, reward);
   accounts.value.winReward = U256SafeAdd(accounts.value.winReward, reward);
@@ -602,8 +733,10 @@ void setReward(address _address, uint256 reward)
   accounts.value.winCount += 1;
 }
 
+MUTABLE
 void setLost(address _address, uint256 amount)
 {
+  // checkLogicContract();
   accounts.key = _address;
   accounts.value.balance = U256SafeSub(accounts.value.balance, amount);
   accounts.value.loseAmount = U256SafeAdd(accounts.value.loseAmount, amount);
@@ -612,6 +745,7 @@ void setLost(address _address, uint256 amount)
 }
 
 // Is the prize pool sufficient?
+UNMUTABLE
 void checkPool(uint256 amount)
 {
   uint256 contractBalance = GetBalanceFromAddress(GetContractAddress());
@@ -619,32 +753,29 @@ void checkPool(uint256 amount)
   PrintUint256T("get contract balance:", contractBalance);
   PrintUint256T("get deposit balance:", deposit);
   uint256 reward = getReward(amount);
-  Require(
-      U256_Cmp(U256SafeSub(contractBalance,
-                           U256SafeAdd(deposit, U256SafeMul(reward, U256(10)))),
-               0) != -1,
-      "No enough money in prize pool");
+  Require(U256_Cmp(U256SafeSub(contractBalance, U256SafeAdd(deposit, U256SafeMul(reward, U256(10)))), 0) != -1, "No enough money in prize pool");
+  Require(U256_Cmp(U256SafeSub(contractBalance, U256SafeAdd(deposit, U256SafeMul(reward, U256(10)))), 0) != -1, "No enough money in prize pool");
 }
 
 
 // Check if there is enough to bet
-void checkAmount(uint256 amount)
+UNMUTABLE
+void checkAmountOf(address from, uint256 amount)
 {
-  Require(U256_Cmp(amount, U256(0) == 1), "amount must > 0");
-  address from = GetSender();
+  // Require(U256_Cmp(amount, U256(0) == 1), "amount must > 0");
+  Require(U256_Cmp(amount, U256(0)), "amount must > 0");
   accounts.key = from;
   uint256 balance = accounts.value.balance;
   PrintAddress("get sender:", from);
   PrintUint256T("get balance:", balance);
-  Require(U256_Cmp(U256SafeSub(balance, amount), 0) != -1,
-          "No enough money to bet");
+  Require(U256_Cmp(U256SafeSub(balance, amount), 0) != -1, "No enough money to bet");
 }
 
 MUTABLE
 void Withdraw(address from, uint256 amount)
 {
-  checkAmount(amount);
-  // address from = GetSender();
+  checkLogicContract();
+  checkAmountOf(from, amount);
   if (TransferFromContract(from, amount) == true)
   {
     accounts.key = from;
@@ -658,6 +789,7 @@ void Withdraw(address from, uint256 amount)
 MUTABLE
 void WithdrawPool(uint256 amount)
 {
+  checkLogicContract();
   checkOwner();
   checkPool(amount);
   TransferFromContract(GetSender(), amount);
@@ -671,6 +803,7 @@ void $DepositPool() {}
 MUTABLE
 void $Deposit()
 {
+  checkLogicContract();
   uint256 amount = GetValue();
   address from = GetSender();
   accounts.key = from;
@@ -682,6 +815,7 @@ void $Deposit()
 MUTABLE
 void addDeposit(address from, uint256 amount)
 {
+  checkLogicContract();
   accounts.key = from;
   accounts.value.balance = U256SafeAdd(accounts.value.balance, amount);
   deposit = U256SafeAdd(deposit, amount);
@@ -692,21 +826,31 @@ void addDeposit(address from, uint256 amount)
 MUTABLE
 void SetNickName(string name)
 {
+  checkLogicContract();
   address from = GetSender();
   accounts.key = from;
   accounts.value.nickName = name;
   EVENT_NICKNAME(from, name);
 }
 
+MUTABLE
+void setNickNameOf(address from, string name)
+{
+  checkLogicContract();
+  accounts.key = from;
+  accounts.value.nickName = name;
+  EVENT_NICKNAME(from, name);
+}
+
 UNMUTABLE
-string GetNickNameFromAddress(address addr)
+string getNickNameOf(address addr)
 {
   accounts.key = addr;
   return accounts.value.nickName;
 }
 
 UNMUTABLE
-string GetNickName() { return GetNickNameFromAddress(GetSender()); }
+string GetNickName() { return getNickNameOf(GetSender()); }
 
 
 
@@ -720,6 +864,7 @@ address GetOwner() { return owner; }
 UNMUTABLE
 uint256 getBalanceOf(address addr)
 {
+  checkLogicContract();
   accounts.key = addr;
   return accounts.value.balance;
 }
@@ -728,7 +873,8 @@ uint256 getBalanceOf(address addr)
 MUTABLE
 void setBalanceOf(address from, uint256 amount)
 {
-  // address from = GetSender();
+
+  checkLogicContract();
   accounts.key = from;
   accounts.value.balance = amount;
   EVENT_SET_BALANCE(from, amount);
@@ -738,6 +884,7 @@ MUTABLE
 void addBalanceOf(address from, uint256 amount)
 {
   // address from = GetSender();
+  // checkLogicContract();
   accounts.key = from;
   accounts.value.balance = U256SafeAdd(accounts.value.balance, amount);
   EVENT_ADD_BALANCE(from, amount);
@@ -746,7 +893,8 @@ void addBalanceOf(address from, uint256 amount)
 MUTABLE
 void subBalanceOf(address from, uint256 amount)
 {
-  // address from = GetSender();
+
+  checkLogicContract();
   accounts.key = from;
   accounts.value.balance = U256SafeSub(accounts.value.balance, amount);
   EVENT_SUB_BALANCE(from, amount);
@@ -769,7 +917,7 @@ uint256 getRewardOf(address addr)
 MUTABLE
 void setRewardOf(address from, uint256 amount)
 {
-  // address from = GetSender();
+  checkLogicContract();
   accounts.key = from;
   accounts.value.winReward = U256SafeAdd(accounts.value.winReward, amount);
   EVENT_SET_REWARD_AMOUNT(from, amount);
@@ -780,7 +928,7 @@ UNMUTABLE
 uint256 getLostOf(address addr)
 {
   accounts.key = addr;
-  return accounts.value.winReward;
+  return accounts.value.loseAmount;
 }
 
 
@@ -788,8 +936,9 @@ MUTABLE
 void setLostOf(address from, uint256 amount)
 {
   // address from = GetSender();
+  checkLogicContract();
   accounts.key = from;
-  accounts.value.loseAmount = U256SafeSub(accounts.value.loseAmount, amount);
+  accounts.value.loseAmount = U256SafeAdd(accounts.value.loseAmount, amount);
   EVENT_SET_LOSE_AMOUNT(from, amount);
 }
 
@@ -806,6 +955,7 @@ MUTABLE
 void setWinCountOf(address from)
 {
   // address from = GetSender();
+  checkLogicContract();
   accounts.key = from;
   accounts.value.winCount += 1;
   EVENT_SET_WIN_COUNT(from);
@@ -824,6 +974,7 @@ MUTABLE
 void setLoseCountOf(address from)
 {
   // address from = GetSender();
+  checkLogicContract();
   accounts.key = from;
   accounts.value.loseCount += 1;
   EVENT_SET_LOSE_COUNT(from);
@@ -842,6 +993,7 @@ MUTABLE
 void setChikenCountOf(address from, uint64 count)
 {
   // address from = GetSender();
+  checkLogicContract();
   accounts.key = from;
   accounts.value.loseCount = count;
   EVENT_SET_CHICKEN_COUNT(from, count);
@@ -860,11 +1012,24 @@ MUTABLE
 void setFreeAddressOf(address from)
 {
   // address from = GetSender();
+  checkLogicContract();
   accounts.key = from;
   if (accounts.value.freeAddress == false) {
     accounts.value.freeAddress = true;
   }
   EVENT_SET_FREE_ADDRESS(from);
+}
+
+MUTABLE
+void claimFreeChips(address from)
+{
+  accounts.key = from;
+  bool flag = accounts.value.freeAddress;
+  Require(flag == false, "you have got before");
+  accounts.value.balance = U256SafeAdd(accounts.value.balance, freeAmount);
+  deposit = U256SafeAdd(deposit, freeAmount);
+  accounts.value.freeAddress = true;
+  EVENT_GETFREEVNT(from, true);
 }
 
 
@@ -876,16 +1041,264 @@ uint256 GetPool()
 }
 
 UNMUTABLE
-uint64 GetTotalGameCount() { return totalGameCount; }
+uint256 getBalanceOfContract()
+{
+  uint256 amount = GetBalanceFromAddress(GetContractAddress());
+  return amount;
+}
+
 
 $_() {
   $Deposit();
 }
 
 
+```
 
-## Write proxy-upgradable contract
+### Logic Contract
+- The logic contract designed to be upgradable without any loss of meaning or significant data, therefore, it contains most of upgradable part of a contract, as well as cross-call functions to access to data contract.
+1. Logic part
+- Any business logic part of a contract need to be placed in this contract, including some data with posibility of upgrading in the future.
 
+2. Cross-contract calls
+- In order to access the data contract, these CALL functions need to be defined in logic contract as reference form vntlib.h
+- For example, the following ared used to access TotalGameCount state on ***DataDice Contract***
+
+  ```c
+    CALL uint64 getTotalGameCount(CallParams params);
+    MUTABLE
+    void setTotalGameCountFromDataCtr(uint64 _totalGameCount){
+        CallParams params = {dataContract, U256(0), 400000};
+        SetTotalGameCount(params, _totalGameCount);
+    }
+  ```
+
+
+The following is an example of ***DiceLogic Contract**
+
+```c
+#include "vntlib.h"
+
+// #include "diceData.h"
+
+
+// for calling another contract
+// CALL uint64 getTotalGameCount(CallParams params);
+// CALL uint32 test(CallParams params,int32 var1,string var2);
+
+
+
+
+KEY address dataContract;
+// KEY address dataContract = Address("0x431efa70fd152855c31eeca24b055d5b591d9ca2");
+
+// KEY uint256 freeAmount = U256(100000000000000000000); // 100*10**18;
+
+EVENT EVENT_BET(indexed address from, string nickname, uint256 amount,
+                int32 bigger, uint64 lottery, uint256 reward);
+// EVENT EVENT_WITHDRAW(indexed address from, string nickname, uint256 amount);
+// EVENT EVENT_DEPOSIT(indexed address from, string nickname, uint256 amount);
+// EVENT EVENT_NICKNAME(indexed address from, string nickName);
+// EVENT EVENT_GETFREEVNT(indexed address from, bool got);
+
+
+// Define name of logic contract
+constructor $DiceLogic()
+{
+
+}
+
+// random function
+uint64 random()
+{
+  uint64 time = GetTimestamp();
+  PrintUint64T("get time", time);
+  string time_sha3 = SHA3(SHA3(SHA3(FromU64(time))));
+  PrintStr("get time sha3", time_sha3);
+  uint64 index = time % 63 + 2;
+  PrintStr("get index", index);
+  uint64 gas = GetGas() % 64 + 2;
+  PrintStr("get gas", gas);
+  uint64 random_a = (uint64)time_sha3[index];
+  PrintUint64T("get random_a", random_a);
+  uint64 random_b = (uint64)time_sha3[index + 1];
+  PrintUint64T("get random_b", random_b);
+  uint64 random_c = random_a * random_b * gas % 101;
+  PrintUint64T("get result", random_c);
+  return random_c;
+}
+
+// INTERFACES FROM DATA CONTRACT
+// for set and get Total Game Count from data Contract
+CALL void SetTotalGameCount(CallParams params, uint64 _totalGameCount);
+CALL uint64 getTotalGameCount(CallParams params);
+// Deposite
+CALL void addDeposit(CallParams params, address from, uint256 amount);
+// change the freeAmount if needed
+CALL void setFreeAmount(CallParams params, uint256 newfreeAmount);
+// claim the freeAmount for player
+CALL void claimFreeChips(CallParams params, address from);
+
+// bet need the following interfaces
+CALL void checkAmountOf(CallParams params, address from, uint256 amount);
+CALL void checkPool(CallParams params, uint256 amount);
+CALL uint256 getRewardOf(CallParams params, address from);
+CALL void setRewardOf(CallParams params, address from, uint256 amount);
+CALL void setLostOf(CallParams params, address from, uint256 amount);
+CALL void setNickNameOf(CallParams params, address from, string name);
+CALL string getNickNameOf(CallParams params, address addr);
+
+MUTABLE
+void setRewardForSender(uint256 amount) {
+  // string _comingString = _address;
+  address from = GetSender();
+  CallParams params = {dataContract, U256(0), 100000};
+  setRewardOf(params, from, amount);
+}
+
+MUTABLE
+void setLoseForSender(uint256 amount) {
+  // string _comingString = _address;
+  address from = GetSender();
+  CallParams params = {dataContract, U256(0), 100000};
+  setLostOf(params, from, amount);
+}
+
+MUTABLE
+void setNickNameForSender(string name) {
+  // string _comingString = _address;
+  address from = GetSender();
+  CallParams params = {dataContract, U256(0), 100000};
+  setNickNameOf(params, from, name);
+}
+
+UNMUTABLE
+void checkAmount(uint256 amount) {
+  // string _comingString = _address;
+  address from = GetSender();
+  CallParams params = {dataContract, U256(0), 100000};
+  checkAmountOf(params, from, amount);
+}
+
+UNMUTABLE
+void checkPoolOnDataContract(uint256 amount) {
+  CallParams params = {dataContract, U256(0), 100000};
+  checkPool(params, amount);
+}
+
+MUTABLE
+void setDataContractAddress(string _address) {
+  // string _comingString = _address;
+  address addr1 = AddressFrom(_address);
+  dataContract = addr1;
+}
+
+UNMUTABLE
+address getDataContractAddress(){
+  // address _contracAddress = Address("0xe122cba856617107b8620ea043e1e650d8695b9c");
+  return dataContract;
+}
+
+
+
+MUTABLE
+void setTotalGameCountFromDataCtr(uint64 _totalGameCount){
+     CallParams params = {dataContract, U256(0), 400000};
+     SetTotalGameCount(params, _totalGameCount);
+}
+
+
+
+
+UNMUTABLE
+uint64 getTotalGameCountFromDataCtr(){
+  // CallParams params = {dataContract, U256(10000), 4000000};
+  // the second parameter: amount of token if transfer is used
+     CallParams params = {dataContract, U256(0), 40000};
+    //  0x431efa70fd152855c31eeca24b055d5b591d9ca2
+     uint64 res = getTotalGameCount(params);
+     return res;
+}
+
+
+
+MUTABLE
+void depositFromSender(uint256 amount) {
+  address from = GetSender();
+  CallParams params = {dataContract, U256(0), 400000};
+  addDeposit(params, from, amount);
+}
+
+
+MUTABLE
+void setFreeAmountOnDataContract(uint256 newAmount) {
+  CallParams params = {dataContract, U256(0), 400000};
+  setFreeAmount(params, newAmount);
+}
+
+
+MUTABLE
+void claimFreeChipsFrom(){
+    address from = GetSender();
+    CallParams params = {dataContract, U256(0), 100000};
+    claimFreeChips(params, from);
+}
+
+
+
+
+
+MUTABLE
+void bet(uint256 amount, int32 bigger)
+{
+  PrintUint256T("get amount:", amount);
+  address sender = GetSender();
+  CallParams params = {dataContract, U256(0), 100000};
+  checkAmountOf(params, sender, amount);
+  // checkPool(params, amount); //need to tranfer token to data contract first.
+  uint64 res = random();
+  // increase totalGameCount
+
+  uint64 totalGameCount = getTotalGameCountFromDataCtr();
+  totalGameCount += 1;
+  setTotalGameCountFromDataCtr(totalGameCount);
+  string _nickName = getNickNameOf(params, sender);
+  uint256 reward = getRewardOf(params, sender);
+
+  if (res > 50 && bigger == 1)
+  {
+    // you win
+    setRewardOf(params, sender, reward);
+    EVENT_BET(sender, _nickName, amount, bigger, res, reward);
+  }
+
+  else if (res < 50 && bigger == -1)
+  {
+    // you win
+
+    setRewardOf(params, sender, reward);
+    EVENT_BET(sender, _nickName, amount, bigger, res, reward);
+  }
+  else if (res == 50 && bigger == 0)
+  {
+    // you are the luckist man
+    reward = U256SafeMul(reward, U256(100));
+    setRewardOf(params, sender, reward);
+    EVENT_BET(sender, _nickName, amount, bigger, res, reward);
+  }
+  else
+  {
+    // you lose
+    setLostOf(params, sender, amount);
+    EVENT_BET(sender, _nickName, amount, bigger, res, U256(0));
+  }
+}
+
+
+```
+
+### Proxy-upgradable contract pattern
+- This require an access from vntlib.h with a functionality to call contract without changing of original address. Currenlty, vntlib.hs has not implimented it yet, or has not exposed this interface yet.
 
 
 ## Summary
