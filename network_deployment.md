@@ -1,4 +1,16 @@
-## How to build a Hubble development and test network locally
+# How to build a Hubble development and test network locally
+
+## Get started
+* Before you start, make sure golang was install on your pc/server. For ubuntu os, the following environments can be set:
+  ```sh
+  export GOROOT=/usr/local/go
+  export GOPATH=$HOME/go
+  export PATH=$PATH:/usr/local/go/bin
+  export PATH=$PATH:$GOPATH/bin
+  source ~/.profile
+  ```
+* Also, make sure you install the [`vnt tools`](https://github.com/vntchain/go-vnt)
+
 This article teaches you how to build a Hubble development test network locally, and takes the development and test network of 4 Hubble witness nodes on a single machine as an example.
 
 The VNT blockchain network needs to send transactions to elect witness nodes. If there is no initial witness, no block will be generated, the election transaction cannot be packaged into the block, and the witness node cannot be elected, so an initial witness node is required. They are responsible for executing transactions and packaging blocks in place of witnesses before the mainnet is launched. However, after a given number of witnesses are registered, the rights to generate blocks and consensus will be transferred to the witness nodes.
@@ -12,16 +24,18 @@ P2p address of each node
 Unified genesis block configuration file dpos.json for each node
 Next, we first generate these 3 parts of data, and then use these 3 parts to build a test network.
 
-VNT network topology of 4 witness nodes.
+VNT network topology of 4 witness nodes
 
-4-witnesses-topology
+  ![`4-witnesses-topology`](./assets/images/4nodesNetwork.png)
+  [`Chinese Language`](https://hubscan.vnt.link/developer/network) 
 
-Red node 0 is node 0, as the bootnode node, bootnode node will be introduced below, 1, 2, 3 are other witness nodes.
+  - Red node 0 is node 0, as the bootnode node, bootnode node will be introduced below, 
+  - 1, 2, 3 are other witness nodes.
 
-Generate 3 parts of data
+## Generate 3 parts of data
 The process of generating these three parts is actually the process of creating founding witnesses and writing their information into the genesis block.
 
-## Create 4 initial witness accounts
+### Create 4 initial witness accounts
 Create a test network file directory testnet,
 
 cd ~
@@ -29,14 +43,6 @@ mkdir testnet
 Use the gvnt account new command to create the account of node 0, and specify the data directory node0 for node 0. During the account creation process, you will be asked to enter the account password. You can directly press Enter, and the password is empty, that is, no password:
 
 ➜ gvnt account new --datadir node0
-  //Acount addresses
-    4c858b39c7730cef513b2eb0434295795cf342b1
-    9bb59926a6cbac7b3ea479983fd8fa54cd89e98c
-    6e7a1d7a5c265e098c5bfe672b378aa638dc44b8
-    88a1493a2eb3358d8d298e53d8afa46609e8a8ab
-
-
-  //pass: Test@2020
 
 
 INFO [12-16|14:47:13] Maximum peer count VNT=25 LES=0 total=25
@@ -45,6 +51,15 @@ Passphrase:
 Repeat passphrase:
 Address: {f31a08c03e03e36214f737755c235e6eadc5502e}
 "f31a08c03e03e36214f737755c235e6eadc5502e" is the address of the account. The account is stored in the node0/keystore directory. The account file under the keystore is the encrypted account private key and other information, which cannot be disclosed.
+
+  - Save Acount addresses
+    4c858b39c7730cef513b2eb0434295795cf342b1
+    9bb59926a6cbac7b3ea479983fd8fa54cd89e98c
+    6e7a1d7a5c265e098c5bfe672b378aa638dc44b8
+    88a1493a2eb3358d8d298e53d8afa46609e8a8ab
+
+
+  - passwords need to be saved if needed:
 
 ➜ ls node0/keystore
 UTC--2018-12-16T04-42-33.665349000Z--f31a08c03e03e36214f737755c235e6eadc5502e
@@ -68,24 +83,29 @@ According to the above example, node1, node2, node3 can be generated as the acco
 
 9 directories, 5 files
 
-## Generate the p2p address of each node
+### Generate the p2p address of each node
 The p2p address is the address for each node to establish a connection. We must first obtain the p2p address of each initial witness. When the node is first started, it will automatically generate the p2p address.
 
 The p2p address contains the IP and port number. When we start the node, we need to specify the port number for communication between nodes. Node 0 to node 4 are assigned port numbers: 12340, 12341, 12342, 12343.
 
 Use the following command to start node 0 and get the p2p address.
+$ gvnt --datadir node0 --port 12340 console
 
-gvnt --datadir node0 --port 12340 console
+-  Omit a lot of output
+/ip4/127.0.0.1/tcp/12340/ipfs/1kHYbyYai6Ns9Kve7BGPqppg4iGEoC43qr1ecVnp8eaGaa1
+
+- Using the same method, the p2p addresses of nodes 1, 2, and 3 can be obtained.
+
 gvnt --datadir node1 --port 12341 console
 gvnt --datadir node2 --port 12342 console
 gvnt --datadir node3 --port 12343 console
-// Omit a lot of output
 
-/ip4/127.0.0.1/tcp/12340/ipfs/1kHYbyYai6Ns9Kve7BGPqppg4iGEoC43qr1ecVnp8eaGaa1
 /ip4/127.0.0.1/tcp/12341/ipfs/1kHBpENGoi69h1kSB3QyxshafAAQ96NzWd2HD2rFhre2mGk
 /ip4/127.0.0.1/tcp/12342/ipfs/1kHXty4MAZbdTTNPv4Lmpfwm2HaShdVTDQWJAzFbPWGj3Kp
 /ip4/127.0.0.1/tcp/12343/ipfs/1kHTMcsoVM3w4vbUL2fJYYP5a6vD1DFmCBin1jFwxuDmYyu
 
+
+- Viet network connection amongst nodes. For example on node 3, issue admin.nodeInfo.vnode
 > admin.nodeInfo.vnode
 {
   id: "1kHVZToJpjDg9tWNzt7XECmf7ChLmZCL627negsi5TBZNc4",
@@ -144,18 +164,6 @@ $ ls node0
   - output:
     gvnt history keystore vntdb
 
-- Using the same method, the p2p addresses of nodes 1, 2, and 3 can be obtained.
-
-gvnt --datadir node0 --port 12340 console
-gvnt --datadir node1 --port 12341 console
-gvnt --datadir node2 --port 12342 console
-gvnt --datadir node3 --port 12343 console
-
-/ip4/127.0.0.1/tcp/12340/ipfs/1kHYbyYai6Ns9Kve7BGPqppg4iGEoC43qr1ecVnp8eaGaa1
-/ip4/127.0.0.1/tcp/12341/ipfs/1kHBpENGoi69h1kSB3QyxshafAAQ96NzWd2HD2rFhre2mGk
-/ip4/127.0.0.1/tcp/12342/ipfs/1kHXty4MAZbdTTNPv4Lmpfwm2HaShdVTDQWJAzFbPWGj3Kp
-/ip4/127.0.0.1/tcp/12343/ipfs/1kHTMcsoVM3w4vbUL2fJYYP5a6vD1DFmCBin1jFwxuDmYyu
-
 
 - Remove the temporary data gvnt directory of node 0:
 
@@ -163,18 +171,18 @@ $ rm -rf node0/gvnt
 
 - You can use the above command to clean up the temporary data of nodes 1, 2, and 3, otherwise it will fail when using the configuration file to initialize the node.
 
-## Create the genesis block configuration file dpos.json
+### Create the genesis block configuration file dpos.json
 We need to use the account and p2p address obtained in the previous 2 steps to create the genesis block configuration file dpos.json for the test network. The genesis block file can be modified based on the file go-vnt/genesis_dpos.json.
 
 - dpos.json needs to be modified
 
   + Block period
   + Number of witness nodes
-  + The account and p2p address of the initial witness node.
+  + The account and p2p address of the initial witness node (as generated above)
     cfa0cc407430b95d01dc0553a29e6ec85fed330b
-c56998f3f3d04a51e7720000883cc1a48fe7f386
-cc669462babe1296906d07c551e094f5cc625f38
-c342a6b62dad572f8dc27a441cc9be992891565f
+    c56998f3f3d04a51e7720000883cc1a48fe7f386
+    cc669462babe1296906d07c551e094f5cc625f38
+    c342a6b62dad572f8dc27a441cc9be992891565f
 
 - This is the content of go-vnt/genesis_dpos.json:
 
@@ -304,7 +312,7 @@ After the above operations, the testnet directory should be as follows:
 16 directories, 5 files
 If it is not the same, please read the above content again to see which step generated the missing file and execute the command to generate it.
 
-## build the Test network
+### build the Test network
 Use data and files to build a testnet
 Use dpos.json to initialize each node
 You need to use the dpos.json generated above to initialize the nodes of the test network, otherwise any node will not be able to join the network due to inconsistent genesis block information.
@@ -327,21 +335,17 @@ INFO [12-16|15:29:36] Successfully wrote genesis state database=lightchaindata h
 The VNT network needs to be automatically established using bootnode. One of the initial witness nodes can be used as the bootnode. When other nodes establish connections with this node, they will establish connections with the remaining nodes.
 
 gvnt --networkid 1012 --datadir node0 --port 12340 console
-<!-- To generate block, sync and --produce option must be provided -->
+- To be able to generate blocks, sync and --produce option must be provided
 $ gvnt --networkid 1012 --datadir node0 --port 12340 --verbosity 4 --syncmode full --produce console
-personal.unlockAccount(core.coinbase, "Test@2020", 3153600000)
+- The account also needs to be unlock
+personal.unlockAccount(core.coinbase, "PasswordIfAny", 3153600000)
 
-<!-- add rpc -->
+- If you want to attach rpc, rpcadd, rpcport, rpcapi need to be provided
 gvnt --networkid 1012 --datadir node0 --port 12340 --verbosity 4 --syncmode full --produce --rpc --rpcaddr 0.0.0.0 --rpcport 8880 --rpcapi="db,core,net,vnt,personal" console
 gvnt --networkid 2 --datadir . --port 3009 --vntbootnode "/ip4/101.37.164.86/tcp/3002/ipfs/1kHkLvCyGX5R33XNr7vmboyYe3etLDs1s9t8odPBZyBwNyB" --syncmode full --rpc --rpcaddr 0.0.0.0 --rpcport 8880 --rpcapi="db,core,net,vnt,personal" console
 
 ### Start the remaining initial witness nodes
-<!-- Make sure you already set PATH FOR GO -->
-export GOROOT=/usr/local/go
-export GOPATH=$HOME/go
-export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:$GOPATH/bin
-source ~/.profile
+
 The startup command of node 1 is as follows. Compared with the command to generate p2p address, you need to specify the p2p address of --vntbootnode, that is, the p2p address of node 0. Use admin.peers to view the nodes that are connected to this node, where <peer.ID 1kHcch6yuBCgC5nPPSK3Yp7Es4c4eenxAeK167pYwUvNjRo> is the p2p address of node 0, indicating that they have established a connection.
 
 gvnt --networkid 1012 --datadir node1 --port 12341 --vntbootnode "/ip4/127.0.0.1/tcp/12340/ipfs/1kHcch6yuBCgC5nPPSK3Yp7Es4c4eenxAeK167pYwUvNjRo" --verbosity 4 --syncmode full --produce console
@@ -455,7 +459,7 @@ personal.unlockAccount("0xa263a3e0d28979c6fb380f0a47ed5b19a89963ef", "Test@2020"
   3. running with log to troubleshooting
   --verbosity 4   //start node with this option
 
-  4. Node our of turn error
+  4. Node our of turn error (warnings)
   - check if start node from address map with the address in genesis.json
 
 
