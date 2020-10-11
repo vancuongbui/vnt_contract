@@ -34,7 +34,7 @@ EVENT EVENT_DEPOSIT(indexed address from, string nickname, uint256 amount);
 EVENT EVENT_NICKNAME(indexed address from, string nickName);
 EVENT EVENT_GETFREEVNT(indexed address from, bool got);
 
-constructor $Dice1()
+constructor $Dice()
 {
   owner = GetSender();
   totalGameCount = 0;

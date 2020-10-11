@@ -32,15 +32,15 @@ var from2 = '0x460018c250d6fc6e2f4a57e1a34c7e36438cb55a';
 var from2Keystore = '/home/ubuntu/testnet/node3/keystore/UTC--2020-09-23T11-32-39.249397942Z--460018c250d6fc6e2f4a57e1a34c7e36438cb55a';
 var pass2 = 'Test@2020';
 
-// vnt.personal.unlockAccount(from1, pass1);
+vnt.personal.unlockAccount(from1, pass1);
 vnt.personal.unlockAccount(from2, pass2);
 
 
 
 var codeFile =
-    '../output/$Dice.compress';
+    '../output1/$Dice1.compress';
 var abiFile =
-    '../output/$Dice.abi';
+    '../output1/$Dice1.abi';
 var wasmabi = fs.readFileSync(abiFile);
 var abi = JSON.parse(wasmabi.toString('utf-8'));
 
