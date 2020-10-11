@@ -185,48 +185,48 @@ We need to use the account and p2p address obtained in the previous 2 steps to c
     c342a6b62dad572f8dc27a441cc9be992891565f
 
 - This is the content of go-vnt/genesis_dpos.json:
-
-{
-  "config": {
-    "chainId": 1012,
-    "dpos": {
-      "period": 2,
-      "witnessesNum": 4,
-      "witnessesUrl": [
-        "/ip4/127.0.0.1/tcp/12340/ipfs/1kHYbyYai6Ns9Kve7BGPqppg4iGEoC43qr1ecVnp8eaGaa1",
-        "/ip4/127.0.0.1/tcp/12341/ipfs/1kHBpENGoi69h1kSB3QyxshafAAQ96NzWd2HD2rFhre2mGk",
-        "/ip4/127.0.0.1/tcp/12342/ipfs/1kHXty4MAZbdTTNPv4Lmpfwm2HaShdVTDQWJAzFbPWGj3Kp",
-        "/ip4/127.0.0.1/tcp/12343/ipfs/1kHTMcsoVM3w4vbUL2fJYYP5a6vD1DFmCBin1jFwxuDmYyu"
-      ]
-    }
-  },
-  "timestamp": "0x5F6B2F0E",
-  "extraData": "0x",
-  "gasLimit": "0x47b760",
-  "difficulty": "0x1",
-  "coinbase": "0x0000000000000000000000000000000000000000",
-  "alloc": {
-    "0xf3830b235b2110a177d30e53e313b093f0f0a370": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+```sh
+  {
+    "config": {
+      "chainId": 1012,
+      "dpos": {
+        "period": 2,
+        "witnessesNum": 4,
+        "witnessesUrl": [
+          "/ip4/127.0.0.1/tcp/12340/ipfs/1kHYbyYai6Ns9Kve7BGPqppg4iGEoC43qr1ecVnp8eaGaa1",
+          "/ip4/127.0.0.1/tcp/12341/ipfs/1kHBpENGoi69h1kSB3QyxshafAAQ96NzWd2HD2rFhre2mGk",
+          "/ip4/127.0.0.1/tcp/12342/ipfs/1kHXty4MAZbdTTNPv4Lmpfwm2HaShdVTDQWJAzFbPWGj3Kp",
+          "/ip4/127.0.0.1/tcp/12343/ipfs/1kHTMcsoVM3w4vbUL2fJYYP5a6vD1DFmCBin1jFwxuDmYyu"
+        ]
+      }
     },
-    "0x460018c250d6fc6e2f4a57e1a34c7e36438cb55a": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+    "timestamp": "0x5F6B2F0E",
+    "extraData": "0x",
+    "gasLimit": "0x47b760",
+    "difficulty": "0x1",
+    "coinbase": "0x0000000000000000000000000000000000000000",
+    "alloc": {
+      "0xf3830b235b2110a177d30e53e313b093f0f0a370": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      },
+      "0x460018c250d6fc6e2f4a57e1a34c7e36438cb55a": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      },
+      "0xa263a3e0d28979c6fb380f0a47ed5b19a89963ef": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      }
     },
-    "0xa263a3e0d28979c6fb380f0a47ed5b19a89963ef": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
-    }
-  },
-  "witnesses": [
-    "0x4c858b39c7730cef513b2eb0434295795cf342b1",
-    "0x9bb59926a6cbac7b3ea479983fd8fa54cd89e98c",
-    "0x6e7a1d7a5c265e098c5bfe672b378aa638dc44b8",
-    "0x88a1493a2eb3358d8d298e53d8afa46609e8a8ab"
-  ],
-  "number": "0x0",
-  "gasUsed": "0x0",
-  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
-}
-
+    "witnesses": [
+      "0x4c858b39c7730cef513b2eb0434295795cf342b1",
+      "0x9bb59926a6cbac7b3ea479983fd8fa54cd89e98c",
+      "0x6e7a1d7a5c265e098c5bfe672b378aa638dc44b8",
+      "0x88a1493a2eb3358d8d298e53d8afa46609e8a8ab"
+    ],
+    "number": "0x0",
+    "gasUsed": "0x0",
+    "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  }
+```
 
 - "dpos": Contains the relevant configuration of dpos: the number of witnesses, the production period, and the initial witness address.
 
@@ -235,80 +235,81 @@ We need to use the account and p2p address obtained in the previous 2 steps to c
 - "chainId": is the ID of the network we created, which is needed when starting the node.
 
 Modify the above data on this basis, you can replace it with the configuration of our private network, the cycle and the number of witnesses remain unchanged, just modify the initial witness p2p address and account number, and then save the modified file to the testnet directory and name it For dpos.json:
-
-{
-  "config": {
-    "chainId": 1012,
-    "dpos": {
-      "period": 2,
-      "witnessesNum": 4,
-      "witnessesUrl": [
-        "/ip4/127.0.0.1/tcp/12340/ipfs/1kHcch6yuBCgC5nPPSK3Yp7Es4c4eenxAeK167pYwUvNjRo",
-        "/ip4/127.0.0.1/tcp/12341/ipfs/1kHJFKr2bzUnMr1NbeyYbYJa3RXT18cEu7cNDrHWjg8XYKB",
-        "/ip4/127.0.0.1/tcp/12342/ipfs/1kHfop9dnUHHmtBXVkLB5UauAmACtrsEX5H5t6oCRpdL198",
-        "/ip4/127.0.0.1/tcp/12343/ipfs/1kHHWuQNUVV2wgE8SqzQjWhiFQcfpkP5tRVTdJXAPWVj4nR"
-      ]
-    }
-  },
-  "nonce": "0x0",
-  "timestamp": "0x5b45b949",
-  "extraData": "0x",
-  "gasLimit": "0x47b760",
-  "difficulty": "0x1",
-  "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "coinbase": "0x0000000000000000000000000000000000000000",
-  "alloc": {
-    "0x122369f04f32269598789998de33e3d56e2c507a": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+```sh
+  {
+    "config": {
+      "chainId": 1012,
+      "dpos": {
+        "period": 2,
+        "witnessesNum": 4,
+        "witnessesUrl": [
+          "/ip4/127.0.0.1/tcp/12340/ipfs/1kHcch6yuBCgC5nPPSK3Yp7Es4c4eenxAeK167pYwUvNjRo",
+          "/ip4/127.0.0.1/tcp/12341/ipfs/1kHJFKr2bzUnMr1NbeyYbYJa3RXT18cEu7cNDrHWjg8XYKB",
+          "/ip4/127.0.0.1/tcp/12342/ipfs/1kHfop9dnUHHmtBXVkLB5UauAmACtrsEX5H5t6oCRpdL198",
+          "/ip4/127.0.0.1/tcp/12343/ipfs/1kHHWuQNUVV2wgE8SqzQjWhiFQcfpkP5tRVTdJXAPWVj4nR"
+        ]
+      }
     },
-    "0x3dcf0b3787c31b2bdf62d5bc9128a79c2bb18829": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+    "nonce": "0x0",
+    "timestamp": "0x5b45b949",
+    "extraData": "0x",
+    "gasLimit": "0x47b760",
+    "difficulty": "0x1",
+    "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "coinbase": "0x0000000000000000000000000000000000000000",
+    "alloc": {
+      "0x122369f04f32269598789998de33e3d56e2c507a": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      },
+      "0x3dcf0b3787c31b2bdf62d5bc9128a79c2bb18829": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      },
+      "0x42a875ac43f2b4e6d17f54d288071f5952bf8911": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      },
+      "0xbf66d398226f200467cd27b14e85b25a8c232384": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      },
+      "0x491f4e8d914e30b1a5e8c804789094fe30971807": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      },
+      "0xe23f3ed4b6969f29284f667c16761212678c917d": {
+        "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
+      }
     },
-    "0x42a875ac43f2b4e6d17f54d288071f5952bf8911": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
-    },
-    "0xbf66d398226f200467cd27b14e85b25a8c232384": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
-    },
-    "0x491f4e8d914e30b1a5e8c804789094fe30971807": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
-    },
-    "0xe23f3ed4b6969f29284f667c16761212678c917d": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
-    }
-  },
-  "witnesses": [
-    "0xf31a08c03e03e36214f737755c235e6eadc5502e",
-    "0x9689e062952b71b825cd9dfc1d1d01a6319c6ebc",
-    "0x54604da2bad12b66e9aef6b8c04629b68771778e",
-    "0xe3d4f3e7d1b82dcc210efe1e0666b45e5a619a2d"
-  ],
-  "number": "0x0",
-  "gasUsed": "0x0",
-  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
-}
+    "witnesses": [
+      "0xf31a08c03e03e36214f737755c235e6eadc5502e",
+      "0x9689e062952b71b825cd9dfc1d1d01a6319c6ebc",
+      "0x54604da2bad12b66e9aef6b8c04629b68771778e",
+      "0xe3d4f3e7d1b82dcc210efe1e0666b45e5a619a2d"
+    ],
+    "number": "0x0",
+    "gasUsed": "0x0",
+    "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  }
+```
 After the above operations, the testnet directory should be as follows:
-
-➜ testnet tree. -L 2
-.
-├── dpos.json
-├── node0
-│ ├── history
-│ ├── keystore
-│ └── vntdb
-├── node1
-│ ├── history
-│ ├── keystore
-│ └── vntdb
-├── node2
-│ ├── history
-│ ├── keystore
-│ └── vntdb
-└── node3
-    ├── history
-    ├── keystore
-    └── vntdb
-
+```sh
+  testnet tree. -L 2
+  .
+  ├── dpos.json
+  ├── node0
+  │ ├── history
+  │ ├── keystore
+  │ └── vntdb
+  ├── node1
+  │ ├── history
+  │ ├── keystore
+  │ └── vntdb
+  ├── node2
+  │ ├── history
+  │ ├── keystore
+  │ └── vntdb
+  └── node3
+      ├── history
+      ├── keystore
+      └── vntdb
+```
 16 directories, 5 files
 If it is not the same, please read the above content again to see which step generated the missing file and execute the command to generate it.
 
@@ -357,6 +358,7 @@ personal.unlockAccount(core.coinbase, "Test@2020", 3153600000)
 
 // Omit to start printing
 > admin.peers
+```sh
 [{
     caps: null,
     id: "<peer.ID 1kHcch6yuBCgC5nPPSK3Yp7Es4c4eenxAeK167pYwUvNjRo>",
@@ -370,6 +372,7 @@ personal.unlockAccount(core.coinbase, "Test@2020", 3153600000)
     },
     protocols: null
 }]
+```
 Start node 2:
 
 gvnt --networkid 1012 --datadir node2 --port 12342 --vntbootnode "/ip4/127.0.0.1/tcp/12340/ipfs/1kHcch6yuBCgC5nPPSK3Yp7Es4c4eenxAeK167pYwUvNjRo" --verbosity 4 --syncmode full --produce  console
@@ -382,6 +385,7 @@ The peer information on node 3 is as follows. There will be 3 nodes on each node
 
 > admin.peers
 > admin.peers
+```sh
 [{
     caps: null,
     id: "<peer.ID 1kHJFKr2bzUnMr1NbeyYbYJa3RXT18cEu7cNDrHWjg8XYKB>",
@@ -419,7 +423,7 @@ The peer information on node 3 is as follows. There will be 3 nodes on each node
     },
     protocols: null
 }]
-
+```
 Package block
 Unlock the account and open the consensus on each initial witness node, and you can see that the block is continuously generated.
 
