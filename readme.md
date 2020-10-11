@@ -6,6 +6,9 @@
   
 Reference [tutorial](https://github.com/vntchain/vnt-documentation/blob/master/introduction/set-up-vnt-network/set-up-4-node-vnt-network.md)
 
+### Contract Development tutorial
+Reference [tutorial](./contract_tutorial.md)
+
 ### Deploy the contract
   
 Reference [tutorial](https://github.com/vntchain/vnt-documentation/blob/master/smart-contract/deploy-contract-tutorial.md)
