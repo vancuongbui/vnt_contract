@@ -5,7 +5,7 @@
 ### Start the test node
   
 * Reference [Chinese Language](https://github.com/vntchain/vnt-documentation/blob/master/introduction/set-up-vnt-network/set-up-4-node-vnt-network.md)
-* [`English Language`](./network_development.md)
+* [`English Language`](./network_deployment.md)
 
 ### Contract Development tutorial
 * Reference [tutorial](./contract_tutorial.md)
