@@ -5,16 +5,11 @@ var TX = require('ethereumjs-tx');
 var vnt = new Vnt();
 
 
-<<<<<<< HEAD
 // var privider = 'http://47.102.157.204:8880';
 var privider = 'http://127.0.0.1:8880';
-=======
-var provider = 'http://47.102.157.204:8880';
-// var provider = 'http://127.0.0.1:8880';
->>>>>>> 851da3cd331123bad80f46e741dc09dc1ea2fd0c
 var chainid = 2;
 
-vnt.setProvider(new vnt.providers.HttpProvider(provider));
+vnt.setProvider(new vnt.providers.HttpProvider(privider));
 
 
 // var from1 = '0x122369f04f32269598789998de33e3d56e2c507a';
@@ -37,20 +32,15 @@ var from2 = '0x460018c250d6fc6e2f4a57e1a34c7e36438cb55a';
 var from2Keystore = '/home/ubuntu/testnet/node3/keystore/UTC--2020-09-23T11-32-39.249397942Z--460018c250d6fc6e2f4a57e1a34c7e36438cb55a';
 var pass2 = 'Test@2020';
 
-<<<<<<< HEAD
-// vnt.personal.unlockAccount(from1, pass1);
-vnt.personal.unlockAccount(from2, pass2);
-=======
 vnt.personal.unlockAccount(from1, pass1);
-// vnt.personal.unlockAccount(from2, pass2);
->>>>>>> 851da3cd331123bad80f46e741dc09dc1ea2fd0c
+vnt.personal.unlockAccount(from2, pass2);
 
-
+const dataContractAddress = "0x431efa70fd152855c31eeca24b055d5b591d9ca2";
 
 var codeFile =
-    '../output/$Dice.compress';
+    '../logicOutput/$DiceLogic.compress';
 var abiFile =
-    '../output/$Dice.abi';
+    '../logicOutput/$DiceLogic.abi';
 var wasmabi = fs.readFileSync(abiFile);
 var abi = JSON.parse(wasmabi.toString('utf-8'));
 
@@ -98,43 +88,6 @@ function deployWasmContractWithPrivateKey() {
   var account = vntkit.account.decrypt(from1Keystore, pass1, false);
 
   sendRawTransaction(account, "0x0", deployContract, value)
-}
-
-function deployWasmContract() {
-  var contract = vnt.core.contract(abi).codeFile(codeFile);
-  var deployContract = contract.packContructorData(
-      {
-        data: contract.code,
-        gas: 4000000,
-        value: vnt.toWei(100000000, 'vnt'),
-      });
-  var nonce = vnt.core.getTransactionCount(from1);
-  var options = {
-    nonce: nonce,
-    gasPrice: vnt.toHex(30000000000000),
-    gasLimit: vnt.toHex(4000000),
-    data: deployContract,
-    value: vnt.toHex(vnt.toWei(value)),
-    chainId: CHAINID
-  };
-  var tx = new TX(options);
-  tx.sign(new Buffer(
-        prikey.substring(
-            2,
-            ),
-        'hex'));
-  var serializedTx = tx.serialize();
-  vnt.core.sendRawTransaction(
-        '0x' + serializedTx.toString('hex'), function(err, txHash) {
-          if (err) {
-            console.log('err happened: ', err)
-            console.log('transaction hash: ', txHash);
-          } else {
-            console.log('transaction hash: ', txHash);
-            var receipt = vnt.core.getTransactionReceipt("txHash")
-            var contractAddress = receipt.contractAddress
-          }
-  });
 }
 
 function getTransactionReceipt(tx, cb) {
@@ -214,10 +167,6 @@ function sendRawTransaction(account,to,data,value){
 
 
 // deployWasmContractWithPrivateKey();
-<<<<<<< HEAD
-=======
-deployWasmContract()
->>>>>>> 851da3cd331123bad80f46e741dc09dc1ea2fd0c
 
 // var contractAddress = '0xda8110f8fac5e486dc38adc41be0e65a91659fb5';
 // GetPool();

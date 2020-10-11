@@ -1,14 +1,14 @@
 # DICE CONTRACT
 
-## 合约部署
+## Contract deployment
 
-安装依赖
+Installation dependencies
 
 ```
 npm install
 ```
 
-部署合约
+Installation dependencies
 
 ```
 node ./deploy/deploy.js
