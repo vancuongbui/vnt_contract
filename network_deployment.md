@@ -66,6 +66,7 @@ UTC--2018-12-16T04-42-33.665349000Z--f31a08c03e03e36214f737755c235e6eadc5502e
 According to the above example, node1, node2, node3 can be generated as the accounts of nodes 1, 2, and 3, and then as long as --datadir node_dir is to operate on this node. Currently, the file structure in the testnet directory should be as follows:
 
 ➜ tree.
+```sh
 .
 ├── node0
 │   └── keystore
@@ -80,6 +81,7 @@ According to the above example, node1, node2, node3 can be generated as the acco
 │   └── keystore
 │       └── UTC--2020-09-23T11-32-39.249397942Z--88a1493a2eb3358d8d298e53d8afa46609e8a8ab
 
+```
 
 9 directories, 5 files
 
@@ -95,18 +97,19 @@ $ gvnt --datadir node0 --port 12340 console
 /ip4/127.0.0.1/tcp/12340/ipfs/1kHYbyYai6Ns9Kve7BGPqppg4iGEoC43qr1ecVnp8eaGaa1
 
 - Using the same method, the p2p addresses of nodes 1, 2, and 3 can be obtained.
+```sh
+  gvnt --datadir node1 --port 12341 console
+  gvnt --datadir node2 --port 12342 console
+  gvnt --datadir node3 --port 12343 console
 
-gvnt --datadir node1 --port 12341 console
-gvnt --datadir node2 --port 12342 console
-gvnt --datadir node3 --port 12343 console
-
-/ip4/127.0.0.1/tcp/12341/ipfs/1kHBpENGoi69h1kSB3QyxshafAAQ96NzWd2HD2rFhre2mGk
-/ip4/127.0.0.1/tcp/12342/ipfs/1kHXty4MAZbdTTNPv4Lmpfwm2HaShdVTDQWJAzFbPWGj3Kp
-/ip4/127.0.0.1/tcp/12343/ipfs/1kHTMcsoVM3w4vbUL2fJYYP5a6vD1DFmCBin1jFwxuDmYyu
-
+  /ip4/127.0.0.1/tcp/12341/ipfs/1kHBpENGoi69h1kSB3QyxshafAAQ96NzWd2HD2rFhre2mGk
+  /ip4/127.0.0.1/tcp/12342/ipfs/1kHXty4MAZbdTTNPv4Lmpfwm2HaShdVTDQWJAzFbPWGj3Kp
+  /ip4/127.0.0.1/tcp/12343/ipfs/1kHTMcsoVM3w4vbUL2fJYYP5a6vD1DFmCBin1jFwxuDmYyu
+```
 
 - Viet network connection amongst nodes. For example on node 3, issue admin.nodeInfo.vnode
 > admin.nodeInfo.vnode
+```sh
 {
   id: "1kHVZToJpjDg9tWNzt7XECmf7ChLmZCL627negsi5TBZNc4",
   ip: "127.0.0.1",
@@ -155,7 +158,7 @@ gvnt --datadir node3 --port 12343 console
   protocols: {},
   vnode: "/ip4/127.0.0.1/tcp/12343/ipfs/1kHG6WgboqNQ9qoAhGUUTDhMnga64jNVVLRdYzRWbN2g5pm"
 }
-
+```
 
 Use control-D to close the client.
 
