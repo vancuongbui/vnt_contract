@@ -107,7 +107,7 @@ $ gvnt --datadir node0 --port 12340 console
   /ip4/127.0.0.1/tcp/12343/ipfs/1kHTMcsoVM3w4vbUL2fJYYP5a6vD1DFmCBin1jFwxuDmYyu
 ```
 
-- Viet network connection amongst nodes. For example on node 3, issue admin.nodeInfo.vnode
+- View network connection amongst nodes. For example on node 3, issue admin.nodeInfo.vnode
 > admin.nodeInfo.vnode
 ```sh
 {
